@@ -1,0 +1,198 @@
+// This is the definitive Prisma schema for your application,
+// using Prisma-native UUIDs for maximum portability and reliability.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id                 String         @id @default(uuid()) @db.Uuid
+  name               String         @unique
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  ownerId            String?        @unique @map("owner_id") @db.Uuid
+  razorpayCustomerId String?        @unique @map("razorpay_customer_id")
+  owner              User?          @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  subscription       Subscription?
+  users              User[]         @relation("OrganizationUsers")
+  roles              Role[]
+  auditLogs          AuditLog[]
+
+  @@map("organizations")
+}
+
+model SubscriptionPlan {
+  id             String         @id @default(uuid()) @db.Uuid
+  name           String         @unique
+  priceInr       Int            @map("price_inr")
+  razorpayPlanId String?        @unique @map("razorpay_plan_id")
+  isFree         Boolean        @default(false) @map("is_free")
+  features       Json?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  subscriptions  Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                     String           @id @default(uuid()) @db.Uuid
+  organizationId         String           @unique @map("organization_id") @db.Uuid
+  planId                 String           @map("plan_id") @db.Uuid
+  razorpaySubscriptionId String?          @unique @map("razorpay_subscription_id")
+  razorpayPaymentId      String?          @map("razorpay_payment_id")
+  status                 String
+  currentPeriodStart     DateTime         @map("current_period_start")
+  currentPeriodEnd       DateTime         @map("current_period_end")
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+  organization           Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                   SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model User {
+  id                String          @id @default(uuid()) @db.Uuid
+  organizationId    String          @map("organization_id") @db.Uuid
+  name              String
+  email             String          @unique
+  passwordHash      String          @map("password_hash")
+  isOwner           Boolean         @default(false) @map("is_owner")
+  tokenVersion     Int      @default(0) @map("token_version")
+  isSuperAdmin      Boolean         @default(false) @map("is_super_admin") // <-- THE FIRST FIX
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  organization      Organization    @relation("OrganizationUsers", fields: [organizationId], references: [id], onDelete: Cascade)
+  ownedOrganization Organization?   @relation("OrganizationOwner")
+  roles             UserRole[]
+  auditLogs         AuditLog[]
+
+  legalServiceProviderProfile LegalServiceProviderProfile?
+  @@map("users")
+}
+
+model Role {
+  id             String           @id @default(uuid()) @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  name           String
+  isSystemRole   Boolean          @default(false) @map("is_system_role") // <-- THE SECOND FIX
+  createdAt      DateTime         @default(now()) @map("created_at")
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  permissions    RolePermission[]
+  users          UserRole[]
+
+  @@unique([organizationId, name])
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  actionName  String           @unique @map("action_name")
+  description String?
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model AuditLog {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  action         String
+  details        Json?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model LegalServiceProviderProfile {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @unique @map("user_id") @db.Uuid
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status           String    @default("APPROVED") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED
+  
+  // Section 1: Organization Details
+  firmName         String?
+  contactNumber    String?
+  address          String?
+  city             String?
+  taluka           String?
+  state            String?
+  pincode          String?
+  email            String?
+  website          String?
+  registrationDate DateTime?
+  companyAge       Int?
+  annualTurnover   String?
+
+  // Section 2: Legal Services
+  serviceCategories String[]
+  otherCategory     String?
+
+  // Section 3: KYC
+  aadhaarLast4     String?
+  pan              String?
+  gstin            String?
+
+  // Section 4: Bank Details
+  accountHolderName String?
+  accountNumber     String?
+  bankName          String?
+  ifscCode          String?
+  branchName        String?
+  upiId             String?
+  paymentMode       String?
+
+  agreedToTermsAt DateTime? @map("agreed_to_terms_at")
+  eSignStatus           String?   @map("e_sign_status") // e.g., 'COMPLETED', 'PENDING'
+  eSignTransactionId    String?   @map("e_sign_transaction_id")
+  eSignedAt             DateTime? @map("e_signed_at")
+  
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relation to dynamic services list
+  legalServiceOfferings LegalServiceOffering[]
+
+  @@map("legal_service_provider_profiles")
+}
+
+model LegalServiceOffering {
+  id          String   @id @default(uuid()) @db.Uuid
+  profileId   String   @map("profile_id") @db.Uuid
+  profile     LegalServiceProviderProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  name        String
+  rate        Float
+  billingCycle String // PER_SERVICE, MONTHLY, YEARLY
+
+  @@map("legal_service_offerings")
+}
