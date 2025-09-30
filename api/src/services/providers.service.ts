@@ -51,7 +51,11 @@ export const getProviders = async (filters: { city?: string; search?: string }, 
     const formattedProviders = providers.map(p => ({
         id: p.user.id, // Use user ID for unique avatar
         name: p.firmName || p.user.name,
+<<<<<<< HEAD
         type: p.serviceCategories[0] || 'Legal Services', // Get the first category
+=======
+        type: p.serviceCategories ? p.serviceCategories.split(',')[0] : 'Legal Services', // Get the first category from comma-separated string
+>>>>>>> master
         rating: 4.5, // You can add a rating field later
         city: p.city,
         address: p.address,

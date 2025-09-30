@@ -28,7 +28,11 @@ const permissions = [
 
 // This hardcoded object correctly defines the INITIAL permissions for each plan's system role.
 const planPermissions: { [key: string]: string[] } = {
+<<<<<<< HEAD
     Free: ['dashboard.view', 'contract.create', 'risk_report.view'],
+=======
+    Free: ['dashboard.view', 'contract.create', 'contract.view.all', 'risk_report.view'],
+>>>>>>> master
     Starter: ['dashboard.view', 'contract.create', 'contract.view.all', 'risk_report.view', 'user.read'],
     Growth: ['dashboard.view', 'contract.create', 'contract.view.all', 'risk_report.view', 'user.read', 'user.invite'],
     "Business Pro": ['dashboard.view', 'contract.create', 'contract.view.all', 'risk_report.view', 'user.read', 'user.invite', 'user.delete', 'user.update.role', 'role.read', 'role.create', 'role.update', 'role.delete'],
@@ -37,19 +41,37 @@ const planPermissions: { [key: string]: string[] } = {
 
 // Your subscription plan definitions. Correct.
 const plans = [
+<<<<<<< HEAD
     { name: "Free", priceInr: 0, razorpayPlanId: null, isFree: true, features: { list: ["AI Risk Engine (5 checks/month)", "Smart Contracts (2/month)", "Basic Buyer Verification"], bestFor: "Ideal for individuals and freelancers starting out.", limits: { riskChecks: 5, contracts: 2 } } },
     { name: "Starter", priceInr: 1191100, razorpayPlanId: "plan_RFag5aeyGUt6Dj", isFree: false, features: { list: ["AI Risk Engine (200 checks/Year)", "Smart Contracts (20/Year)", "Basic Ecommerce Store (limited products)", "Buyer Verification (Basic)", "Community Support"], bestFor: "Best for freelancers, consultants, micro-businesses" } },
     { name: "Growth", priceInr: 2392300, razorpayPlanId: "plan_RFagQlJRwPfJQJ", isFree: false, features: { list: ["AI Risk Engine (700 checks/Year)", "Smart Contracts (75/Year)", "Advanced Ecommerce Store", "Centralized Buyer Blocklist Access", "Basic ERP Modules (Accounting + Inventory)", "Verified Buyers & Suppliers Network (Standard)", "Email & Chat Support"], bestFor: "Best for small & mid-size MSMEs" } },
     { name: "Business Pro", priceInr: 3493400, razorpayPlanId: "plan_RFagmPiUchK3FP", isFree: false, features: { list: ["AI Risk Engine (1,500 checks/Year)", "Smart Contracts (200/Year)", "Full Ecommerce Suite", "Advanced ERP Modules (Inventory, Accounting, Payroll, Taxation)", "Verified Buyers & Suppliers Network (Premium)", "Third-Party Integrations (GST, MCA, Tally, Zoho, Busy, Vyapar)", "Financial & Legal Assistance (Basic)", "Priority Support"], bestFor: "Best for growing enterprises & multi-location businesses" } },
     { name: "Enterprise", priceInr: 4994900, razorpayPlanId: "plan_RFahCAzuDb6R3s", isFree: false, features: { list: ["Unlimited AI Risk Checks", "Unlimited Smart Contracts", "Complete Ecommerce + ERP Suite", "Buyer/Supplier Network (Enterprise Tier)", "Advanced Financial & Legal Integrations", "API Access for Custom Development", "Government Schemes & Funding Advisory", "Dedicated Account Manager", "24/7 Priority Support"], bestFor: "Best for large corporations, associations & clusters" } }
+=======
+    { name: "Free", priceInr: 0, razorpayPlanId: null, isFree: true, features: JSON.stringify({ list: ["AI Risk Engine (5 checks/month)", "Smart Contracts (2/month)", "Basic Buyer Verification"], bestFor: "Ideal for individuals and freelancers starting out.", limits: { riskChecks: 5, contracts: 2 } }) },
+    { name: "Starter", priceInr: 1191100, razorpayPlanId: "plan_RFag5aeyGUt6Dj", isFree: false, features: JSON.stringify({ list: ["AI Risk Engine (200 checks/Year)", "Smart Contracts (20/Year)", "Basic Ecommerce Store (limited products)", "Buyer Verification (Basic)", "Community Support"], bestFor: "Best for freelancers, consultants, micro-businesses" }) },
+    { name: "Growth", priceInr: 2392300, razorpayPlanId: "plan_RFagQlJRwPfJQJ", isFree: false, features: JSON.stringify({ list: ["AI Risk Engine (700 checks/Year)", "Smart Contracts (75/Year)", "Advanced Ecommerce Store", "Centralized Buyer Blocklist Access", "Basic ERP Modules (Accounting + Inventory)", "Verified Buyers & Suppliers Network (Standard)", "Email & Chat Support"], bestFor: "Best for small & mid-size MSMEs" }) },
+    { name: "Business Pro", priceInr: 3493400, razorpayPlanId: "plan_RFagmPiUchK3FP", isFree: false, features: JSON.stringify({ list: ["AI Risk Engine (1,500 checks/Year)", "Smart Contracts (200/Year)", "Full Ecommerce Suite", "Advanced ERP Modules (Inventory, Accounting, Payroll, Taxation)", "Verified Buyers & Suppliers Network (Premium)", "Third-Party Integrations (GST, MCA, Tally, Zoho, Busy, Vyapar)", "Financial & Legal Assistance (Basic)", "Priority Support"], bestFor: "Best for growing enterprises & multi-location businesses" }) },
+    { name: "Enterprise", priceInr: 4994900, razorpayPlanId: "plan_RFahCAzuDb6R3s", isFree: false, features: JSON.stringify({ list: ["Unlimited AI Risk Checks", "Unlimited Smart Contracts", "Complete Ecommerce + ERP Suite", "Buyer/Supplier Network (Enterprise Tier)", "Advanced Financial & Legal Integrations", "API Access for Custom Development", "Government Schemes & Funding Advisory", "Dedicated Account Manager", "24/7 Priority Support"], bestFor: "Best for large corporations, associations & clusters" }) }
+>>>>>>> master
 ];
 
 async function main() {
   console.log(`Start seeding ...`);
 
   // --- 1. Seed Permissions ---
+<<<<<<< HEAD
   // Using createMany with skipDuplicates is efficient and safe for re-running the seed.
   await prisma.permission.createMany({ data: permissions, skipDuplicates: true });
+=======
+  // Using createMany without skipDuplicates for SQLite compatibility
+  try {
+    await prisma.permission.createMany({ data: permissions });
+  } catch (error) {
+    // Ignore unique constraint errors on re-run
+    console.log('Permissions may already exist, continuing...');
+  }
+>>>>>>> master
   const allPermissions = await prisma.permission.findMany();
   console.log(`✅ ${allPermissions.length} permissions are in the database.`);
 

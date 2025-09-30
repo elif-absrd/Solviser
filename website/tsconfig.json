@@ -8,7 +8,10 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+<<<<<<< HEAD
     "forceConsistentCasingInFileNames": true,
+=======
+>>>>>>> master
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -17,16 +20,27 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+<<<<<<< HEAD
     "plugins": [
       {
         "name": "next"
       }
     ],
+=======
+>>>>>>> master
     "paths": {
       "@/*": [
         "./*"
       ]
     },
+<<<<<<< HEAD
+=======
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+>>>>>>> master
     "target": "ES2017"
   },
   "include": [

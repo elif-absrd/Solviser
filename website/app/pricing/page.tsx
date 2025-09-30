@@ -16,10 +16,14 @@ interface Plan {
   priceInr: number;
   isFree: boolean;
   razorpayPlanId: string | null;
+<<<<<<< HEAD
   features: {
     list: string[];
     bestFor: string;
   } | null;
+=======
+  features: string | null; // Changed from object to string (JSON)
+>>>>>>> master
 }
 
 // Define the type for the Pricing Card props
@@ -38,6 +42,12 @@ const PricingCard: React.FC<PlanProps> = ({ plan, isSelected = false, onSelect, 
     const isFreePlan = plan.isFree;
     const buttonText = isFreePlan ? 'Sign Up for Free' : 'Get Started';
 
+<<<<<<< HEAD
+=======
+    // Parse features JSON string if it exists
+    const parsedFeatures = plan.features ? JSON.parse(plan.features) : null;
+
+>>>>>>> master
     const handleClick = () => {
         if (isFreePlan) {
             onFreePlan();
@@ -59,7 +69,11 @@ const PricingCard: React.FC<PlanProps> = ({ plan, isSelected = false, onSelect, 
           <span className={`ml-2 ${isSelected ? 'text-gray-500' : 'text-gray-400'}`}>/ Year</span>
         </div>
         <ul className="mt-8 space-y-4 flex-grow">
+<<<<<<< HEAD
           {plan.features?.list.map((feature, index) => (
+=======
+          {parsedFeatures?.list.map((feature: string, index: number) => (
+>>>>>>> master
             <li key={index} className="flex items-start gap-3">
               <CheckCircle2 size={20} className={`mt-1 flex-shrink-0 ${isSelected ? 'text-[#f05134]' : 'text-[#f05134]'}`} />
               <span>{feature}</span>
@@ -67,7 +81,11 @@ const PricingCard: React.FC<PlanProps> = ({ plan, isSelected = false, onSelect, 
           ))}
         </ul>
         <div className={`mt-8 pt-4 border-t ${isSelected ? 'border-gray-200' : 'border-white/10'}`}>
+<<<<<<< HEAD
             <p className={`text-xs font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-300'}`}>👉 {plan.features?.bestFor}</p>
+=======
+            <p className={`text-xs font-semibold ${isSelected ? 'text-gray-700' : 'text-gray-300'}`}>👉 {parsedFeatures?.bestFor}</p>
+>>>>>>> master
         </div>
         <button 
           onClick={handleClick} 

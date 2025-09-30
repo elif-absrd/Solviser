@@ -43,9 +43,12 @@ jspm_packages/
 # Optional eslint cache
 .eslintcache
 
+<<<<<<< HEAD
 # Optional stylelint cache
 .stylelintcache
 
+=======
+>>>>>>> master
 # Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/
@@ -61,19 +64,32 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
+<<<<<<< HEAD
 # dotenv environment variable files
 .env
 .env.development.local
 .env.test.local
 .env.production.local
 .env.local
+=======
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+>>>>>>> master
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
 # Next.js build output
+<<<<<<< HEAD
 .next
+=======
+.next/
+>>>>>>> master
 out/
 
 # Nuxt.js build / generate output
@@ -87,6 +103,7 @@ public
 # Storybook build outputs
 .out
 .storybook-out
+<<<<<<< HEAD
 storybook-static
 
 # Rollup.js default build output
@@ -99,11 +116,14 @@ dist/
 # Storybook build outputs
 .out
 .storybook-out
+=======
+>>>>>>> master
 
 # Temporary folders
 tmp/
 temp/
 
+<<<<<<< HEAD
 # Runtime data
 pids
 *.pid
@@ -162,6 +182,76 @@ jspm_packages/
 
 # Serverless directories
 .serverless
+=======
+# Logs
+logs
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+dev.db
+database.db
+
+# Prisma
+prisma/dev.db
+prisma/migrations/**/migration.sql
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+*.exe
+*.msi
+*.msm
+*.msp
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Build outputs
+build/
+dist/
+*.tgz
+*.tar.gz
+
+# Runtime and compiled files
+*.compiled
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Application specific
+uploads/
+storage/
+public/uploads/
+
+# Testing
+test-results/
+coverage/
+
+# Serverless directories
+.serverless/
+>>>>>>> master
 
 # FuseBox cache
 .fusebox/
@@ -175,6 +265,7 @@ jspm_packages/
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -236,9 +327,78 @@ playwright/.cache/
 
 # Vercel
 .vercel
+=======
+# Yarn PnP files
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# pnpm
+.pnpm-debug.log*
+>>>>>>> master
 
 # Turborepo
 .turbo
 
+<<<<<<< HEAD
 # Sentry Config File
 .sentryclirc
+=======
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Local development
+.local
+.cache
+
+# API keys and secrets
+secrets.json
+config/secrets.json
+
+# Certificate files
+*.pem
+*.crt
+*.key
+
+# Docker
+.dockerignore
+Dockerfile.dev
+
+# PM2
+ecosystem.config.js
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# MacOS
+.DS_Store
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+>>>>>>> master

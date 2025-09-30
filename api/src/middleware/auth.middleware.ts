@@ -6,8 +6,19 @@ import prisma from '../prisma'; // Import your Prisma client
 // Define the shape of our JWT payload
 interface JwtPayload {
   userId: string;
+<<<<<<< HEAD
   tokenVersion: number;
   // ... other properties
+=======
+  organizationId: string;
+  isOwner: boolean;
+  name: string;
+  email: string;
+  isSuperAdmin: boolean;
+  permissions: string[];
+  tokenVersion: number;
+  isNewUser?: boolean;
+>>>>>>> master
 }
 
 export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
@@ -40,7 +51,11 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       return res.sendStatus(403); // Forbidden
     }
 
+<<<<<<< HEAD
     // 3. Token is valid and fresh. Attach the payload to the request.
+=======
+    // 3. Token is valid and fresh. Attach the complete payload to the request.
+>>>>>>> master
     req.user = payload;
     
     next();

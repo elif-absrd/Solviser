@@ -43,8 +43,13 @@ const getUserWithPermissions = async (userId: string) => {
     // --- THE FIX IS HERE ---
     // The special case for `isOwner` is removed.
     // Permissions are now built exclusively from the roles assigned to the user.
+<<<<<<< HEAD
     user.roles.forEach(userRole => {
         userRole.role.permissions.forEach(rolePermission => {
+=======
+    user.roles.forEach((userRole: any) => {
+        userRole.role.permissions.forEach((rolePermission: any) => {
+>>>>>>> master
             permissions.add(rolePermission.permission.actionName);
         });
     });
@@ -103,7 +108,11 @@ export const registerOrganizationAndUser = async (res: Response, organizationNam
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
+<<<<<<< HEAD
  const result = await prisma.$transaction(async (tx) => {
+=======
+ const result = await prisma.$transaction(async (tx: any) => {
+>>>>>>> master
     const freePlan = await tx.subscriptionPlan.findUnique({ where: { name: 'Free' } });
     if (!freePlan) { throw new ApiError('Default "Free" plan not found.', 500); }
     
@@ -111,7 +120,13 @@ export const registerOrganizationAndUser = async (res: Response, organizationNam
     const freeRole = await tx.role.findFirst({ where: { name: 'Free', isSystemRole: true } });
     if (!freeRole) { throw new ApiError('Default "Free" role not found.', 500); }
 
+<<<<<<< HEAD
     const newOrganization = await tx.organization.create({ data: { name: organizationName } });
+=======
+    // Make organization name unique by appending timestamp
+    const uniqueOrgName = `${organizationName}_${Date.now()}`;
+    const newOrganization = await tx.organization.create({ data: { name: uniqueOrgName } });
+>>>>>>> master
     const newUser = await tx.user.create({
       data: { name: userName, email, passwordHash, organizationId: newOrganization.id, isOwner: true },
     });
@@ -178,10 +193,24 @@ export const handleGoogleAuth = async (res: Response, code: string) => {
 
         if (!user) {
             isNewUser = true;
+<<<<<<< HEAD
             const result = await prisma.$transaction(async (tx) => {
                 const freePlan = await tx.subscriptionPlan.findFirst({ where: { isFree: true } });
                 if (!freePlan) { throw new ApiError('Default "Free" plan not found.', 500); }
                 const newOrganization = await tx.organization.create({ data: { name: `${name}'s Organization` } });
+=======
+            const result = await prisma.$transaction(async (tx: any) => {
+                const freePlan = await tx.subscriptionPlan.findFirst({ where: { isFree: true } });
+                if (!freePlan) { throw new ApiError('Default "Free" plan not found.', 500); }
+                
+                // Find the system role that corresponds to the "Free" plan
+                const freeRole = await tx.role.findFirst({ where: { name: 'Free', isSystemRole: true } });
+                if (!freeRole) { throw new ApiError('Default "Free" role not found.', 500); }
+                
+                // Make organization name unique
+                const uniqueOrgName = `${name}'s Organization_${Date.now()}`;
+                const newOrganization = await tx.organization.create({ data: { name: uniqueOrgName } });
+>>>>>>> master
                 const randomPassword = Math.random().toString(36).slice(-16);
                 const passwordHash = await bcrypt.hash(randomPassword, 10);
                 const newUser = await tx.user.create({
@@ -194,11 +223,30 @@ export const handleGoogleAuth = async (res: Response, code: string) => {
                         currentPeriodStart: new Date(), currentPeriodEnd: new Date('2099-12-31'),
                     }
                 });
+<<<<<<< HEAD
+=======
+                
+                // Assign the "Free" role to the new user (the owner)
+                await tx.userRole.create({
+                    data: {
+                        userId: newUser.id,
+                        roleId: freeRole.id,
+                    }
+                });
+                
+>>>>>>> master
                 return newUser;
             });
             user = result;
         }
 
+<<<<<<< HEAD
+=======
+        if (!user) {
+            throw new ApiError('Failed to create or find user.', 500);
+        }
+
+>>>>>>> master
         const userWithPermissions = await getUserWithPermissions(user.id);
         if (!userWithPermissions) { throw new ApiError('Could not find user details.', 404); }
 

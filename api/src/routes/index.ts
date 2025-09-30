@@ -9,6 +9,10 @@ import userRouter from './user.routes'; // <-- Import user routes
 import verificationRoutes from './verification.routes';
 import onboardingRoutes from './onboarding.routes';
 import providerRoutes from './providers.routes'; // <-- Import provider routes
+<<<<<<< HEAD
+=======
+import contractRouter from './contract.routes'; // <-- Import contract routes
+>>>>>>> master
 const router = Router();
 
 // Health check endpoint
@@ -27,6 +31,10 @@ router.use('/user', userRouter); // <-- Add user routes
 router.use('/verification', verificationRoutes);
 router.use('/onboarding', onboardingRoutes);
 router.use('/providers', providerRoutes);
+<<<<<<< HEAD
 // You can add other routes here later, e.g., router.use('/contracts', contractRoutes);
+=======
+router.use('/contracts', contractRouter); // <-- Add contract routes
+>>>>>>> master
 
 export default router;

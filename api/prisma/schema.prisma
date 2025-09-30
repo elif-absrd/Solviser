@@ -6,33 +6,57 @@ generator client {
 }
 
 datasource db {
+<<<<<<< HEAD
   provider = "postgresql"
+=======
+  provider = "sqlite"
+>>>>>>> master
   url      = env("DATABASE_URL")
 }
 
 model Organization {
+<<<<<<< HEAD
   id                 String         @id @default(uuid()) @db.Uuid
   name               String         @unique
   createdAt          DateTime       @default(now()) @map("created_at")
   updatedAt          DateTime       @updatedAt @map("updated_at")
   ownerId            String?        @unique @map("owner_id") @db.Uuid
+=======
+  id                 String         @id @default(uuid())
+  name               String         @unique
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  ownerId            String?        @unique @map("owner_id")
+>>>>>>> master
   razorpayCustomerId String?        @unique @map("razorpay_customer_id")
   owner              User?          @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   subscription       Subscription?
   users              User[]         @relation("OrganizationUsers")
   roles              Role[]
   auditLogs          AuditLog[]
+<<<<<<< HEAD
+=======
+  contracts          Contract[]
+>>>>>>> master
 
   @@map("organizations")
 }
 
 model SubscriptionPlan {
+<<<<<<< HEAD
   id             String         @id @default(uuid()) @db.Uuid
+=======
+  id             String         @id @default(uuid())
+>>>>>>> master
   name           String         @unique
   priceInr       Int            @map("price_inr")
   razorpayPlanId String?        @unique @map("razorpay_plan_id")
   isFree         Boolean        @default(false) @map("is_free")
+<<<<<<< HEAD
   features       Json?
+=======
+  features       String?        // Changed from Json to String for SQLite
+>>>>>>> master
   createdAt      DateTime       @default(now()) @map("created_at")
   subscriptions  Subscription[]
 
@@ -40,9 +64,15 @@ model SubscriptionPlan {
 }
 
 model Subscription {
+<<<<<<< HEAD
   id                     String           @id @default(uuid()) @db.Uuid
   organizationId         String           @unique @map("organization_id") @db.Uuid
   planId                 String           @map("plan_id") @db.Uuid
+=======
+  id                     String           @id @default(uuid())
+  organizationId         String           @unique @map("organization_id")
+  planId                 String           @map("plan_id")
+>>>>>>> master
   razorpaySubscriptionId String?          @unique @map("razorpay_subscription_id")
   razorpayPaymentId      String?          @map("razorpay_payment_id")
   status                 String
@@ -57,8 +87,13 @@ model Subscription {
 }
 
 model User {
+<<<<<<< HEAD
   id                String          @id @default(uuid()) @db.Uuid
   organizationId    String          @map("organization_id") @db.Uuid
+=======
+  id                String          @id @default(uuid())
+  organizationId    String          @map("organization_id")
+>>>>>>> master
   name              String
   email             String          @unique
   passwordHash      String          @map("password_hash")
@@ -71,14 +106,23 @@ model User {
   ownedOrganization Organization?   @relation("OrganizationOwner")
   roles             UserRole[]
   auditLogs         AuditLog[]
+<<<<<<< HEAD
+=======
+  contracts         Contract[]
+>>>>>>> master
 
   legalServiceProviderProfile LegalServiceProviderProfile?
   @@map("users")
 }
 
 model Role {
+<<<<<<< HEAD
   id             String           @id @default(uuid()) @db.Uuid
   organizationId String           @map("organization_id") @db.Uuid
+=======
+  id             String           @id @default(uuid())
+  organizationId String           @map("organization_id")
+>>>>>>> master
   name           String
   isSystemRole   Boolean          @default(false) @map("is_system_role") // <-- THE SECOND FIX
   createdAt      DateTime         @default(now()) @map("created_at")
@@ -91,7 +135,11 @@ model Role {
 }
 
 model Permission {
+<<<<<<< HEAD
   id          String           @id @default(uuid()) @db.Uuid
+=======
+  id          String           @id @default(uuid())
+>>>>>>> master
   actionName  String           @unique @map("action_name")
   description String?
   roles       RolePermission[]
@@ -100,8 +148,13 @@ model Permission {
 }
 
 model RolePermission {
+<<<<<<< HEAD
   roleId       String     @map("role_id") @db.Uuid
   permissionId String     @map("permission_id") @db.Uuid
+=======
+  roleId       String     @map("role_id")
+  permissionId String     @map("permission_id")
+>>>>>>> master
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
@@ -110,8 +163,13 @@ model RolePermission {
 }
 
 model UserRole {
+<<<<<<< HEAD
   userId String @map("user_id") @db.Uuid
   roleId String @map("role_id") @db.Uuid
+=======
+  userId String @map("user_id")
+  roleId String @map("role_id")
+>>>>>>> master
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
@@ -120,11 +178,19 @@ model UserRole {
 }
 
 model AuditLog {
+<<<<<<< HEAD
   id             String       @id @default(uuid()) @db.Uuid
   organizationId String       @map("organization_id") @db.Uuid
   userId         String       @map("user_id") @db.Uuid
   action         String
   details        Json?
+=======
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  userId         String       @map("user_id")
+  action         String
+  details        String?        // Changed from Json to String for SQLite
+>>>>>>> master
   createdAt      DateTime     @default(now()) @map("created_at")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -133,8 +199,13 @@ model AuditLog {
 }
 
 model LegalServiceProviderProfile {
+<<<<<<< HEAD
   id               String    @id @default(uuid()) @db.Uuid
   userId           String    @unique @map("user_id") @db.Uuid
+=======
+  id               String    @id @default(uuid())
+  userId           String    @unique @map("user_id")
+>>>>>>> master
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   status           String    @default("APPROVED") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED
@@ -154,7 +225,11 @@ model LegalServiceProviderProfile {
   annualTurnover   String?
 
   // Section 2: Legal Services
+<<<<<<< HEAD
   serviceCategories String[]
+=======
+  serviceCategories String?       // Changed from String[] to String for SQLite - store as comma-separated
+>>>>>>> master
   otherCategory     String?
 
   // Section 3: KYC
@@ -186,8 +261,13 @@ model LegalServiceProviderProfile {
 }
 
 model LegalServiceOffering {
+<<<<<<< HEAD
   id          String   @id @default(uuid()) @db.Uuid
   profileId   String   @map("profile_id") @db.Uuid
+=======
+  id          String   @id @default(uuid())
+  profileId   String   @map("profile_id")
+>>>>>>> master
   profile     LegalServiceProviderProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   
   name        String
@@ -195,4 +275,33 @@ model LegalServiceOffering {
   billingCycle String // PER_SERVICE, MONTHLY, YEARLY
 
   @@map("legal_service_offerings")
+<<<<<<< HEAD
 }
+=======
+}
+
+model Contract {
+  id                     String       @id @default(uuid())
+  organizationId         String       @map("organization_id")
+  createdById            String       @map("created_by_id")
+  contractTitle          String       @map("contract_title")
+  contractType           String       @map("contract_type")
+  buyerName              String       @map("buyer_name")
+  buyerGstNumber         String?      @map("buyer_gst_number")
+  buyerRegisteredAddress String?      @map("buyer_registered_address")
+  contractValue          Float        @map("contract_value")
+  startDate              DateTime     @map("start_date")
+  endDate                DateTime     @map("end_date")
+  status                 String       @default("active") // active, completed, at_risk, defaulted, in_renewal, cancelled
+  termsAndClauses        String?      @map("terms_and_clauses")
+  riskScore              Int          @default(50) @map("risk_score")
+  industry               String       @default("General")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt              DateTime     @updatedAt @map("updated_at")
+  
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy              User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("contracts")
+}
+>>>>>>> master

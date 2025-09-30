@@ -8,6 +8,11 @@ interface AddNewContractPageProps {
   onGoBack: () => void;
 }
 
+<<<<<<< HEAD
+=======
+import api from '@/lib/api';
+
+>>>>>>> master
 interface FormData {
   buyerName: string;
   gstPanCin: string;
@@ -21,6 +26,10 @@ interface FormData {
   contractValue: string;
   termsAndClauses: string;
   agreedToTerms: boolean;
+<<<<<<< HEAD
+=======
+  industry: string;
+>>>>>>> master
 }
 
 export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps) {
@@ -39,7 +48,14 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
     contractValue: '',
     termsAndClauses: '',
     agreedToTerms: false,
+<<<<<<< HEAD
   });
+=======
+    industry: 'General',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+>>>>>>> master
 
   // Handle changes to any form input
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -63,6 +79,43 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
     setCurrentStep((prevStep) => prevStep - 1);
   };
 
+<<<<<<< HEAD
+=======
+  // Function to handle contract submission
+  const handleSubmit = async () => {
+    if (!formData.agreedToTerms) {
+      alert('Please agree to the terms and conditions');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await api.post('/contracts', {
+        buyerName: formData.buyerName,
+        gstNumber: formData.gstNumber,
+        registeredAddress: formData.registeredAddress,
+        contractTitle: formData.contractTitle,
+        contractType: formData.contractType,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        contractValue: formData.contractValue,
+        termsAndClauses: formData.termsAndClauses,
+        industry: formData.industry,
+      });
+
+      alert('Contract created successfully!');
+      onGoBack(); // Go back to the dashboard
+    } catch (error: any) {
+      console.error('Failed to create contract:', error);
+      setSubmitError(error.response?.data?.error || 'Failed to create contract');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+>>>>>>> master
   // Conditionally render the form content based on the current step
   const renderStepContent = () => {
     switch (currentStep) {
@@ -207,8 +260,11 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
             <button 
               onClick={onGoBack} 
               className="px-4 py-2.5 mr-4 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+<<<<<<< HEAD
               aria-label="Go back"
               title="Go back"
+=======
+>>>>>>> master
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5" />
@@ -249,12 +305,40 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
               Next
             </button>
           ) : (
+<<<<<<< HEAD
             <button className="px-6 py-2.5 rounded-full text-white bg-green-600 hover:bg-green-700 transition-colors ml-auto">
               Create Contract
+=======
+            <button 
+              onClick={handleSubmit}
+              disabled={isSubmitting || !formData.agreedToTerms}
+              className="px-6 py-2.5 rounded-full text-white bg-green-600 hover:bg-green-700 transition-colors ml-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Creating...
+                </>
+              ) : (
+                'Create Contract'
+              )}
+>>>>>>> master
             </button>
           )}
         </div>
       </div>
+<<<<<<< HEAD
+=======
+
+      {/* Error Display */}
+      {submitError && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{submitError}</p>
+        </div>
+      )}
+>>>>>>> master
     </div>
   );
 }

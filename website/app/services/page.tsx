@@ -107,7 +107,11 @@ export default function ServicesPage() {
                 <h2 className={`${montserrat.className} text-3xl font-bold mb-6 text-center text-[#262626]`}>{financialData.title}</h2>
                 <div className="bg-slate-50 rounded-lg border border-slate-200">
                     {financialData.categories.map((category, index) => (
+<<<<<<< HEAD
                          <div className="border-b border-slate-200 last:border-b-0">
+=======
+                         <div key={index} className="border-b border-slate-200 last:border-b-0">
+>>>>>>> master
                             <button
                                 onClick={() => setOpenFinancial(openFinancial === index ? null : index)}
                                 className="w-full flex justify-between items-center p-6 text-left"
