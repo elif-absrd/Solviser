@@ -1,0 +1,34 @@
+.valuebox1{
+    background-color: hsla(9, 86%, 57%, 0.85);
+    margin-right: -25px;
+}
+.valuebox2{
+    background-color: hsla(0, 0%, 15%, 0.85);
+    margin-left: -25px;
+    color: #f7f7f7;
+}
+.valuebox3{
+    background-color: hsla(0, 0%, 15%, 0.85);
+    margin-right: -25px;
+    margin-top: -50px;
+    color: #f7f7f7;
+}
+.valuebox4{
+    background-color: hsla(9, 86%, 57%, 0.85);
+    margin-left: -25px;
+    margin-top: -50px;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* move left by half, since we duplicated logos */
+  }
+}
+
+.animate-scroll {
+  display: flex;
+  animation: scroll 10s linear infinite;
+}

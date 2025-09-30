@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Contract Management Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Base styles and reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, Roboto, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+
+    /* Dashboard frame and container */
+    .dashboard-frame {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      border: 2px solid #CED4DA;
+      overflow: hidden;
+    }
+
+    .dashboard-body {
+      width: 100%;
+    }
+
+    @media (max-width: 991px) {
+      .dashboard-body {
+        max-width: 100%;
+      }
+    }
+
+    .dashboard-container {
+      background-color: #FFF9F2;
+      display: flex;
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    @media (max-width: 991px) {
+      .dashboard-container {
+        max-width: 100%;
+      }
+    }
+
+    /* Header styles */
+    .main-header {
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+      display: flex;
+      width: 100%;
+      padding: 16px 80px;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    @media (max-width: 991px) {
+      .main-header {
+        max-width: 100%;
+        padding: 16px 20px;
+      }
+    }
+
+    .header-content {
+      display: flex;
+      width: 100%;
+      padding: 1px 70px;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    @media (max-width: 991px) {
+      .header-content {
+        max-width: 100%;
+        padding-left: 20px;
+      }
+    }
+
+    .header-elements {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .notification-icon {
+      aspect-ratio: 0.87;
+      object-fit: contain;
+      object-position: center;
+      width: 14px;
+      align-self: stretch;
+      margin: auto 0;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .message-icon {
+      aspect-ratio: 1;
+      object-fit: contain;
+      object-position: center;
+      width: 16px;
+      align-self: stretch;
+      margin: auto 0;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .user-profile {
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+    }
+
+    .user-avatar {
+      aspect-ratio: 1;
+      object-fit: contain;
+      object-position: center;
+      width: 40px;
+      border-radius: 9999px;
+      align-self: stretch;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      color: #1F2937;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1;
+      align-self: stretch;
+      margin: auto 0;
+      flex-basis: auto;
+    }
+
+    .dropdown-container {
+      align-self: stretch;
+      display: flex;
+      margin: auto 0;
+      min-height: 14px;
+      align-items: center;
+      overflow: hidden;
+      justify-content: center;
+    }
+
+    .dropdown-icon {
+      aspect-ratio: 1;
+      object-fit: contain;
+      object-position: center;
+      width: 14px;
+      align-self: stretch;
+      margin: auto 0;
+    }
+
+    .main-content-wrapper {
+      align-self: flex-end;
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 991px) {
+      .main-content-wrapper {
+        margin-right: 9px;
+      }
+    }
+
+    /* Main content area */
+    .main-content {
+      padding: 30px 21px;
+      flex-grow: 1;
+      flex-shrink: 0;
+      flex-basis: 0;
+      width: fit-content;
+    }
+
+    @media (max-width: 991px) {
+      .main-content {
+        max-width: 100%;
+        padding: 30px 20px;
+      }
+    }
+
+    /* Page header section */
+    .page-header {
+      display: flex;
+      width: 100%;
+      align-items: stretch;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 991px) {
+      .page-header {
+        max-width: 100%;
+        margin-right: 3px;
+      }
+    }
+
+    .page-title-container {
+      display: flex;
+      padding: 1px 8px 7px 0;
+      flex-direction: column;
+      align-items: stretch;
+      line-height: 1;
+    }
+
+    @media (max-width: 991px) {
+      .page-title-container {
+        max-width: 100%;
+      }
+    }
+
+    .page-title {
+      color: #1F2937;
+      font-size: 24px;
+      font-weight: 700;
+      align-self: flex-start;
+    }
+
+    .page-description {
+      color: #4B5563;
+      font-size: 16px;
+      font-weight: 400;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 991px) {
+      .page-description {
+        max-width: 100%;
+      }
+    }
+
+    .primary-button {
+      border-radius: 8px;
+      background-color: #F05134;
+      display: flex;
+      margin: auto 0;
+      padding: 12px 24px;
+      align-items: stretch;
+      gap: 8px;
+      font-size: 16px;
+      color: #FFFFFF;
+      font-weight: 400;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .primary-button:hover {
+      background-color: #D83A1D;
+    }
+
+    @media (max-width: 991px) {
+      .primary-button {
+        padding: 12px 20px;
+      }
+    }
+
+    .button-icon {
+      aspect-ratio: 0.87;
+      object-fit: contain;
+      object-position: center;
+      width: 14px;
+      margin: auto 0;
+      flex-shrink: 0;
+    }
+
+    .button-text {
+      padding: 2px 2px 10px 2px;
+    }
+
+    /* Stats cards section */
+    .stats-cards {
+      display: flex;
+      margin-top: 30px;
+      padding: 3px;
+      align-items: stretch;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      flex: 1;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-title {
+      padding: 1px 0 8px 0;
+      font-size: 14px;
+      color: #6B7280;
+      font-weight: 400;
+    }
+
+    @media (max-width: 991px) {
+      .stat-title {
+        padding-right: 20px;
+      }
+    }
+
+    .stat-value-container {
+      display: flex;
+      margin-top: 8px;
+      width: 100%;
+      padding: 4px 0;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .stat-icon-container {
+      align-self: flex-start;
+      display: flex;
+      margin-top: 5px;
+      min-height: 20px;
+      align-items: center;
+      overflow: hidden;
+      justify-content: center;
+    }
+
+    .stat-icon {
+      aspect-ratio: 0.75;
+      object-fit: contain;
+      object-position: center;
+      width: 15px;
+      align-self: stretch;
+      margin: auto 0;
+    }
+
+    .stat-value {
+      color: #1F2937;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1;
+      flex-grow: 1;
+      flex-shrink: 1;
+      width: 172px;
+    }
+
+    .stat-trend {
+      display: flex;
+      margin-top: 8px;
+      width: 100%;
+      padding: 2px 0;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .trend-icon-container {
+      align-self: flex-start;
+      display: flex;
+      min-height: 14px;
+      align-items: center;
+      overflow: hidden;
+      justify-content: center;
+    }
+
+    .trend-icon {
+      aspect-ratio: 0.79;
+      object-fit: contain;
+      object-position: center;
+      width: 11px;
+      align-self: stretch;
+      margin: auto 0;
+    }
+
+    .trend-text {
+      font-size: 14px;
+      font-weight: 400;
+      flex-grow: 1;
+      flex-shrink: 1;
+      width: 185px;
+    }
+
+    .positive .trend-text {
+      color: #10B981;
+    }
+
+    .warning .trend-text {
+      color: #F59E0B;
+    }
+
+    .negative .trend-text {
+      color: #EF4444;
+    }
+
+    .info .trend-text {
+      color: #3B82F6;
+    }
+
+    .stat-subtitle {
+      margin-top: 8px;
+      padding: 4px 0;
+      font-size: 14px;
+      color: #6B7280;
+      font-weight: 400;
+    }
+
+    @media (max-width: 991px) {
+      .stat-subtitle {
+        padding-right: 20px;
+      }
+    }
+
+    /* Quick Action Center */
+    .quick-action-center {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+      margin-top: 28px;
+    }
+
+    @media (max-width: 991px) {
+      .quick-action-center {
+        max-width: 100%;
+        margin-right: 3px;
+      }
+    }
+
+    .section-title {
+      border-bottom: 1px solid #F3F4F6;
+      padding: 22px 16px;
+      font-size: 16px;
+      color: #1F2937;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    @media (max-width: 991px) {
+      .section-title {
+        max-width: 100%;
+        padding-right: 20px;
+      }
+    }
+
+    .action-buttons-container {
+      display: flex;
+      width: 100%;
+      padding: 16px 16px 16px 16px;
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: 14px;
+      color: #FFFFFF;
+      font-weight: 400;
+      text-align: center;
+    }
+
+    @media (max-width: 991px) {
+      .action-buttons-container {
+        max-width: 100%;
+        padding-right: 20px;
+      }
+    }
+
+    .action-buttons-row {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons-row + .action-buttons-row {
+      margin-top: 12px;
+    }
+
+    .action-button {
+      border-radius: 6px;
+      background-color: #F05134;
+      display: flex;
+      padding: 8px 16px;
+      align-items: stretch;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 400;
+      transition: background-color 0.3s;
+    }
+
+    .action-button:hover {
+      background-color: #D83A1D;
+    }
+
+    .action-icon {
+      aspect-ratio: 0.86;
+      object-fit: contain;
+      object-position: center;
+      width: 12px;
+      margin: auto 0;
+      flex-shrink: 0;
+    }
+
+    .action-text {
+      padding: 1px 2px 8px 2px;
+    }
+
+    /* Contracts section */
+    .contracts-section {
+      margin-top: 30px;
+    }
+
+    @media (max-width: 991px) {
+      .contracts-section {
+        max-width: 100%;
+      }
+    }
+
+    .contracts-layout {
+      gap: 20px;
+      display: flex;
+    }
+
+    @media (max-width: 991px) {
+      .contracts-layout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0px;
+      }
+    }
+
+    .contracts-column {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      line-height: normal;
+      width: 66%;
+      margin-left: 0px;
+    }
+
+    @media (max-width: 991px) {
+      .contracts-column {
+        width: 100%;
+      }
+    }
+
+    .contracts-container {
+      padding: 2px 0 200px 0;
+      width: 100%;
+    }
+
+    @media (max-width: 991px) {
+      .contracts-container {
+        max-width: 100%;
+        margin-top: 18px;
+        padding-bottom: 100px;
+      }
+    }
+
+    .filter-container {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      padding: 16px;
+    }
+
+    @media (max-width: 991px) {
+      .filter-container {
+        max-width: 100%;
+        margin-right: 3px;
+      }
+    }
+
+    .filter-header {
+      display: flex;
+      padding: 2px 0;
+      align-items: stretch;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 991px) {
+      .filter-header {
+        max-width: 100%;
+      }
+    }
+
+    .filter-title {
+      color: #1F2937;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .clear-filter-button {
+      background-color: transparent;
+      padding: 1px 1px 8px 1px;
+      font-size: 14px;
+      color: #F05134;
+      font-weight: 400;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .clear-filter-button:hover {
+      color: #D83A1D;
+    }
+
+    .filter-options {
+      display: flex;
+      margin-top: 16px;
+      align-items: stretch;
+      gap: 16px;
+      font-size: 14px;
+      font-weight: 400;
+      flex-wrap: wrap;
+    }
+
+    .filter-option {
+      flex: 1;
+    }
+
+    .filter-label {
+      padding: 4px 0;
+      color: #4B5563;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 991px) {
+      .filter-label {
+        padding-right: 20px;
+        white-space: initial;
+      }
+    }
+
+    .filter-select {
+      border-radius: 6px;
+      background-color: #FFFFFF;
+      border: 1px solid #D1D5DB;
+      display: flex;
+      margin-top: 4px;
+      padding: 8px 10px;
+      align-items: stretch;
+      gap: 20px;
+      color: #1F2937;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .filter-select:hover {
+      border-color: #9CA3AF;
+    }
+
+    .select-arrow {
+      aspect-ratio: 1;
+      object-fit: contain;
+      object-position: center;
+      width: 21px;
+      flex-shrink: 0;
+    }
+
+    .sort-select {
+      padding: 4px 10px;
+    }
+
+    /* Contracts list */
+    .contracts-list {
+      margin-top: 22px;
+      padding: 1px 3px;
+      margin-bottom: 107px;
+    }
+
+    @media (max-width: 991px) {
+      .contracts-list {
+        max-width: 100%;
+      }
+    }
+
+    .contract-card {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      margin-bottom: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .contract-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 991px) {
+      .contract-card {
+        max-width: 100%;
+      }
+    }
+
+    .contract-header {
+      border-bottom: 1px solid #F3F4F6;
+      display: flex;
+      width: 100%;
+      padding: 17px 16px;
+      align-items: stretch;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 991px) {
+      .contract-header {
+        max-width: 100%;
+      }
+    }
+
+    .contract-company {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      line-height: 1;
+    }
+
+    .company-logo {
+      aspect-ratio: 1;
+      object-fit: contain;
+      object-position: center;
+      width: 32px;
+      border-radius: 9999px;
+      margin: auto 0;
+      flex-shrink: 0;
+    }
+
+    .company-info {
+      display: flex;
+      padding: 2px 0 8px 0;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .company-name {
+      color: #1F2937;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .contract-id {
+      color: #6B7280;
+      font-size: 14px;
+      font-weight: 400;
+      align-self: flex-start;
+      margin-top: 8px;
+    }
+
+    .risk-badge {
+      margin: auto 0;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .high-risk {
+      border-radius: 9999px;
+      background-color: #FEE2E2;
+      padding: 5px 12px;
+      color: #DC2626;
+    }
+
+    .medium-risk {
+      border-radius: 9999px;
+      background-color: #FEF3C7;
+      padding: 5px 12px;
+      color: #D97706;
+    }
+
+    .low-risk {
+      border-radius: 9999px;
+      background-color: #D1FAE5;
+      padding: 5px 12px;
+      color: #059669;
+    }
+
+    .contract-details {
+      display: flex;
+      padding: 16px;
+      align-items: stretch;
+      gap: 16px;
+      line-height: 1;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 991px) {
+      .contract-details {
+        max-width: 100%;
+      }
+    }
+
+    .detail-item {
+      display: flex;
+      padding: 1px 36px 7px 0;
+      flex-direction: column;
+      align-items: flex-start;
+      flex: 1;
+    }
+
+    .detail-label {
+      color: #6B7280;
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    .detail-value {
+      color: #1F2937;
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .status-at-risk {
+      color: #F59E0B;
+    }
+
+    .status-open {
+      color: #10B981;
+    }
+
+    .status-renewal {
+      color: #3B82F6;
+    }
+
+    .contract-footer {
+      display: flex;
+      padding: 17px 16px;
+      align-items: stretch;
+      gap: 20px;
+      font-size: 14px;
+      color: #6B7280;
+      font-weight: 400;
+      line-height: 1;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 991px) {
+      .contract-footer {
+        max-width: 100%;
+      }
+    }
+
+    .last-updated {
+      margin: auto 0;
+    }
+
+    .contract-actions {
+      aspect-ratio: 4.81;
+      object-fit: contain;
+      object-position: center;
+      width: 154px;
+      flex-shrink: 0;
+      max-width: 100%;
+      cursor: pointer;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      margin-top: 16px;
+      width: 100%;
+      padding: 0 70px;
+      flex-direction: column;
+      align-items: center;
+      font-size: 16px;
+      color: #6B7280;
+      font-weight: 400;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    @media (max-width: 991px) {
+      .pagination {
+        max-width: 100%;
+        padding: 0 20px;
+        white-space: initial;
+      }
+    }
+
+    .pagination {
+      display: flex;
+      width: 183px;
+      max-width: 100%;
+      align-items: stretch;
+      gap: 4px;
+      flex-direction: row;
+    }
+
+    @media (max-width: 991px) {
+      .pagination {
+        white-space: initial;
+      }
+    }
+
+    .pagination-arrow {
+      aspect-ratio: 1.06;
+      object-fit: contain;
+      object-position: center;
+      width: 34px;
+      border-radius: 6px;
+      margin: auto 0;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .pagination-button {
+      border-radius: 6px;
+      background-color: transparent;
+      padding: 10px 13px 18px 13px;
+      border: none;
+      cursor: pointer;
+      color: #6B7280;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .pagination-button:hover {
+      background-color: #F3F4F6;
+    }
+
+    .pagination-button.active {
+      background-color: #F05134;
+      padding: 10px 14px 18px 14px;
+      color: #FFFFFF;
+    }
+
+    @media (max-width: 991px) {
+      .pagination-button {
+        white-space: initial;
+      }
+    }
+
+    /* Sidebar column */
+    .sidebar-column {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      line-height: normal;
+      width: 34%;
+      margin-left: 20px;
+    }
+
+    @media (max-width: 991px) {
+      .sidebar-column {
+        width: 100%;
+      }
+    }
+
+    .insights-container {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-container {
+      border-bottom: 1px solid #F3F4F6;
+      display: flex;
+      width: 100%;
+      padding: 17px 16px 17px 16px;
+      flex-direction: column;
+      align-items: stretch;
+      color: #1F2937;
+      line-height: 1;
+    }
+
+    .chart-title {
+      font-size: 14px;
+      font-weight: 500;
+      align-self: flex-start;
+    }
+
+    .chart-image {
+      aspect-ratio: 1.93;
+      object-fit: contain;
+      object-position: center;
+      width: 100%;
+      margin-top: 18px;
+    }
+
+    .chart-legend {
+      margin-top: 8px;
+      width: 100%;
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .legend-row + .legend-row {
+      margin-top: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      padding: 1px 0;
+      align-items: stretch;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .legend-color {
+      border-radius: 9999px;
+      align-self: flex-start;
+      display: flex;
+      width: 12px;
+      flex-shrink: 0;
+      height: 12px;
+    }
+
+    .legend-color.blue {
+      background-color: #3B82F6;
+    }
+
+    .legend-color.green {
+      background-color: #10B981;
+    }
+
+    .legend-color.orange {
+      background-color: #F59E0B;
+    }
+
+    .legend-color.purple {
+      background-color: #8B5CF6;
+    }
+
+    .chart-insight {
+      align-self: center;
+      display: flex;
+      margin-top: 8px;
+      width: 224px;
+      max-width: 100%;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .insight-icon-container {
+      align-self: flex-start;
+      display: flex;
+      min-height: 12px;
+      align-items: center;
+      overflow: hidden;
+      justify-content: center;
+    }
+
+    .insight-icon {
+      aspect-ratio: 0.75;
+      object-fit: contain;
+      object-position: center;
+      width: 9px;
+      align-self: stretch;
+      margin: auto 0;
+    }
+
+    .insight-text {
+      color: #10B981;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1;
+      flex-grow: 1;
+      flex-shrink: 1;
+      width: 209px;
+    }
+
+    /* Milestones section */
+    .milestones-container {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+      margin-top: 24px;
+      line-height: 1;
+    }
+
+    .milestones-list {
+      padding: 16px;
+      font-size: 12px;
+      font-weight: 400;
+      justify-content: center;
+    }
+
+    .milestone-items {
+      width: 100%;
+      list-style-type: none;
+    }
+
+    .milestone-item {
+      display: flex;
+      padding-right: 74px;
+      align-items: stretch;
+      gap: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      border-radius: 6px;
+      padding: 8px;
+    }
+
+    .milestone-item:hover {
+      background-color: #F9FAFB;
+    }
+
+    .milestone-item + .milestone-item {
+      margin-top: 12px;
+    }
+
+    @media (max-width: 991px) {
+      .milestone-item {
+        padding-right: 20px;
+      }
+    }
+
+    .milestone-icon {
+      aspect-ratio: 1;
+      object-fit: contain;
+      object-position: center;
+      width: 24px;
+      border-radius: 9999px;
+      align-self: flex-start;
+      flex-shrink: 0;
+    }
+
+    .milestone-details {
+      display: flex;
+      padding: 3px 0;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .milestone-title {
+      color: #1F2937;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .milestone-company {
+      color: #6B7280;
+      align-self: stretch;
+      margin-top: 6px;
+    }
+
+    .milestone-due {
+      color: #6B7280;
+      margin-top: 4px;
+    }
+
+    .milestone-due.urgent {
+      color: #EF4444;
+    }
+
+    .milestone-due.warning {
+      color: #F59E0B;
+    }
+
+    /* Options section */
+    .options-container {
+      border-radius: 8px;
+      background-color: #FFFFFF;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+      margin-top: 24px;
+    }
+
+    .options-list {
+      width: 100%;
+      padding: 16px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: stretch;
+      gap: 20px;
+      justify-content: space-between;
+    }
+
+    .option-item + .option-item {
+      margin-top: 16px;
+    }
+
+    .option-details {
+      display: flex;
+      padding: 3px 0;
+      flex-direction: column;
+      align-items: stretch;
+      line-height: 1;
+    }
+
+    .option-title {
+      color: #1F2937;
+      font-size: 14px;
+      font-weight: 500;
+      align-self: flex-start;
+    }
+
+    .option-description {
+      color: #6B7280;
+      font-size: 12px;
+      font-weight: 400;
+      margin-top: 8px;
+    }
+
+    .toggle-switch {
+      margin: auto 0;
+      cursor: pointer;
+    }
+
+    .toggle-slider {
+      border-radius: 9999px;
+      background-color: #E5E7EB;
+      display: flex;
+      flex-shrink: 0;
+      height: 24px;
+      width: 48px;
+      position: relative;
+      transition: background-color 0.3s;
+    }
+
+    .toggle-slider:after {
+      content: "";
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.4s;
+    }
+
+    .toggle-slider.active {
+      background-color: #F05134;
+    }
+
+    .toggle-slider.active:after {
+      transform: translateX(24px);
+    }
+
+    /* Sidebar toggle */
+    .sidebar-toggle {
+      aspect-ratio: 1.01;
+      object-fit: contain;
+      object-position: center;
+      width: 78px;
+      align-self: flex-start;
+      margin-top: 1625px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    @media (max-width: 991px) {
+      .sidebar-toggle {
+        margin-top: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-frame">
+    <div class="dashboard-body">
+      <div class="dashboard-container">
+        <header class="main-header">
+          <div class="header-content">
+            <div class="header-elements">
+              <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/8273fdbc70d585b560b15b2774dfd08de6400293?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="notification-icon" alt="Notification">
+              <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/106aa6a8c1deefcf97acf422d8cf8e289ff855de?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="message-icon" alt="Messages">
+              <div class="user-profile">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/f602d1c799db0d63939a761dff01466b3ba1901f?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="user-avatar" alt="User Avatar">
+                <h3 class="user-name">Rajesh Kumar</h3>
+                <div class="dropdown-container">
+                  <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/a966739569cf8e63633bc857401eeab567b18e08?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="dropdown-icon" alt="Dropdown">
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div class="main-content-wrapper">
+          <main class="main-content">
+            <section class="page-header">
+              <div class="page-title-container">
+                <h1 class="page-title">Smart Contract Management</h1>
+                <p class="page-description">Create, manage, track, and analyze smart B2B contracts with AI-enabled risk assessment</p>
+              </div>
+              <button class="primary-button" id="newContractBtn">
+                <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/a0bc3af384cc91350432de7291fc50d08f1c8dc9?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="button-icon" alt="Add">
+                <span class="button-text">New Smart Contract</span>
+              </button>
+            </section>
+
+            <section class="stats-cards">
+              <article class="stat-card">
+                <h4 class="stat-title">Active Contracts</h4>
+                <div class="stat-value-container">
+                  <div class="stat-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/2630a270d9900fd690a8c118d2b46a526ba46400?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="stat-icon" alt="Active">
+                  </div>
+                  <p class="stat-value">42</p>
+                </div>
+                <div class="stat-trend positive">
+                  <div class="trend-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/eebed600b0124f68e5c815f9ee4a2c24392efe15?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="trend-icon" alt="Trend Up">
+                  </div>
+                  <p class="trend-text">8% from last month</p>
+                </div>
+              </article>
+
+              <article class="stat-card">
+                <h4 class="stat-title">Completed Contracts</h4>
+                <div class="stat-value-container">
+                  <div class="stat-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/79432c44dbcf955dd32ed4b8923dcf3d43d6df68?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="stat-icon" alt="Completed">
+                  </div>
+                  <p class="stat-value">128</p>
+                </div>
+                <p class="stat-subtitle">Total completed</p>
+              </article>
+
+              <article class="stat-card">
+                <h4 class="stat-title">Contracts at Risk</h4>
+                <div class="stat-value-container">
+                  <div class="stat-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/77aef182dfd73721d51e6caa37a6927781e2cbd2?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="stat-icon" alt="Risk">
+                  </div>
+                  <p class="stat-value">7</p>
+                </div>
+                <div class="stat-trend warning">
+                  <div class="trend-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/7ce189904e37ea3b837f50c744db5b93b796ff38?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="trend-icon" alt="Trend Up">
+                  </div>
+                  <p class="trend-text">3% from last month</p>
+                </div>
+              </article>
+
+              <article class="stat-card">
+                <h4 class="stat-title">Defaulted Contracts</h4>
+                <div class="stat-value-container">
+                  <div class="stat-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5c140359fded190301b413f957d814072faf337d?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="stat-icon" alt="Defaulted">
+                  </div>
+                  <p class="stat-value">3</p>
+                </div>
+                <div class="stat-trend negative">
+                  <div class="trend-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/cafecbd093992cd5a56368a676f1c9c1bd6f4ea3?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="trend-icon" alt="New">
+                  </div>
+                  <p class="trend-text">1 new this month</p>
+                </div>
+              </article>
+
+              <article class="stat-card">
+                <h4 class="stat-title">In Renewal</h4>
+                <div class="stat-value-container">
+                  <div class="stat-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/c3d9ee7f36210ebd8c971d07b6a864983480af31?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="stat-icon" alt="Renewal">
+                  </div>
+                  <p class="stat-value">12</p>
+                </div>
+                <div class="stat-trend info">
+                  <div class="trend-icon-container">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/ac0aab882671da6e47b3b39c23014f4cadc82525?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="trend-icon" alt="Due">
+                  </div>
+                  <p class="trend-text">5 due this week</p>
+                </div>
+              </article>
+            </section>
+
+            <section class="quick-action-center">
+              <h2 class="section-title">Quick Action Center</h2>
+              <div class="action-buttons-container">
+                <div class="action-buttons-row">
+                  <button class="action-button" id="newSmartContractBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/b3b6563e7f44e65c3512d0e0f984eb3793a991e3?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="New Contract">
+                    <span class="action-text">New Smart Contract</span>
+                  </button>
+                  <button class="action-button" id="uploadContractBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/c1a8ed6fab72b9d6296e0877fef99ac77a46820d?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="Upload">
+                    <span class="action-text">Upload Contract Document</span>
+                  </button>
+                  <button class="action-button" id="viewRiskReportBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d736f6cd2c575b361154f51b6dae7eb3724e835f?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="Risk Report">
+                    <span class="action-text">View Risk Report</span>
+                  </button>
+                  <button class="action-button" id="downloadReportBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/661b53d706d518e8118d4d82035b98c64a6a9297?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="Download">
+                    <span class="action-text">Download All Contracts Report</span>
+                  </button>
+                  <button class="action-button" id="notifyBuyerBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5b3371a2522b475c07661a809782f5b54930b3ec?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="Notify">
+                    <span class="action-text">Notify Buyer</span>
+                  </button>
+                </div>
+                <div class="action-buttons-row">
+                  <button class="action-button" id="renewContractBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/4e5bd298ab4ae0d521a427f3f199e115267016e4?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="Renew">
+                    <span class="action-text">Renew Contract</span>
+                  </button>
+                  <button class="action-button" id="reportDisputeBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/3672b87ae62afd02ed0a9c6ced8d0d67fdcf040d?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="Dispute">
+                    <span class="action-text">Report Dispute</span>
+                  </button>
+                  <button class="action-button" id="exportAnalyticsBtn">
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/9a220590b18206f7a7dc1a309e08a18409c749c9?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="action-icon" alt="Export">
+                    <span class="action-text">Export Contract Analytics</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="contracts-section" space="18">
+              <div class="contracts-layout">
+                <div class="contracts-column">
+                  <div class="contracts-container">
+                    <div class="filter-container">
+                      <div class="filter-header">
+                        <h3 class="filter-title">Filter Contracts</h3>
+                        <button class="clear-filter-button" id="clearFiltersBtn">Clear Filters</button>
+                      </div>
+                      <div class="filter-options">
+                        <div class="filter-option">
+                          <label class="filter-label">Buyer</label>
+                          <div class="filter-select" id="buyerFilter">
+                            <p>All Buyers</p>
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/fb2e03c2b88e83869192bec26b8ac8d88174628f?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="select-arrow" alt="Arrow">
+                          </div>
+                        </div>
+                        <div class="filter-option">
+                          <label class="filter-label">Industry</label>
+                          <div class="filter-select" id="industryFilter">
+                            <p>All Industries</p>
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/a2bd33ae48451946709775b47acd9caf581be194?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="select-arrow" alt="Arrow">
+                          </div>
+                        </div>
+                        <div class="filter-option">
+                          <label class="filter-label">Status</label>
+                          <div class="filter-select" id="statusFilter">
+                            <p>All Statuses</p>
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/0410fb1ab9577c022d626c179f9a9dbc1344f6ed?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="select-arrow" alt="Arrow">
+                          </div>
+                        </div>
+                        <div class="filter-option">
+                          <label class="filter-label">Sort By</label>
+                          <div class="filter-select sort-select" id="sortByFilter">
+                            <p>Risk Score (High to Low)</p>
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/857558cbdacd5f0da5caa07245a63d8dbc77c05d?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="select-arrow" alt="Arrow">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contracts-list">
+                      <article class="contract-card" id="contract1">
+                        <div class="contract-header">
+                          <div class="contract-company">
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/80ad6e331ddc131fefd2b3345ca0122e9019251c?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="company-logo" alt="Company Logo">
+                            <div class="company-info">
+                              <h3 class="company-name">Textile Manufacturer, Ludhiana</h3>
+                              <p class="contract-id">Contract ID: TML-2025-042</p>
+                            </div>
+                          </div>
+                          <div class="risk-badge">
+                            <span class="high-risk">High Risk (41)</span>
+                          </div>
+                        </div>
+                        <div class="contract-details">
+                          <div class="detail-item">
+                            <h4 class="detail-label">Contract Value</h4>
+                            <p class="detail-value">₹10,00,000</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">Start Date</h4>
+                            <p class="detail-value">15 Mar 2025</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">End Date</h4>
+                            <p class="detail-value">15 Sep 2025</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">Status</h4>
+                            <p class="detail-value status-at-risk">At Risk</p>
+                          </div>
+                        </div>
+                        <div class="contract-footer">
+                          <p class="last-updated">Last updated: 2 hours ago</p>
+                          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/06fe6cc686263701b0767926a2a261deff4a3a45?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="contract-actions" alt="Actions">
+                        </div>
+                      </article>
+
+                      <article class="contract-card" id="contract2">
+                        <div class="contract-header">
+                          <div class="contract-company">
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/cd298f04f661ad437d53bb63b1c8d8cc40a808d7?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="company-logo" alt="Company Logo">
+                            <div class="company-info">
+                              <h3 class="company-name">Tech Solutions Ltd, Bengaluru</h3>
+                              <p class="contract-id">Contract ID: TSL-2025-078</p>
+                            </div>
+                          </div>
+                          <div class="risk-badge">
+                            <span class="low-risk">Low Risk (87)</span>
+                          </div>
+                        </div>
+                        <div class="contract-details">
+                          <div class="detail-item">
+                            <h4 class="detail-label">Contract Value</h4>
+                            <p class="detail-value">₹25,50,000</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">Start Date</h4>
+                            <p class="detail-value">01 Jan 2025</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">End Date</h4>
+                            <p class="detail-value">31 Dec 2025</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">Status</h4>
+                            <p class="detail-value status-open">Open</p>
+                          </div>
+                        </div>
+                        <div class="contract-footer">
+                          <p class="last-updated">Last updated: 1 day ago</p>
+                          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/246e12239ce40b44fe2663532a75e9bfeabaa7bc?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="contract-actions" alt="Actions">
+                        </div>
+                      </article>
+
+                      <article class="contract-card" id="contract3">
+                        <div class="contract-header">
+                          <div class="contract-company">
+                            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/861965721f0630b064f50e997647a857044e2282?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="company-logo" alt="Company Logo">
+                            <div class="company-info">
+                              <h3 class="company-name">Agro Industries, Gujarat</h3>
+                              <p class="contract-id">Contract ID: AGI-2025-115</p>
+                            </div>
+                          </div>
+                          <div class="risk-badge">
+                            <span class="medium-risk">Medium Risk (63)</span>
+                          </div>
+                        </div>
+                        <div class="contract-details">
+                          <div class="detail-item">
+                            <h4 class="detail-label">Contract Value</h4>
+                            <p class="detail-value">₹7,25,000</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">Start Date</h4>
+                            <p class="detail-value">10 Feb 2025</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">End Date</h4>
+                            <p class="detail-value">10 May 2025</p>
+                          </div>
+                          <div class="detail-item">
+                            <h4 class="detail-label">Status</h4>
+                            <p class="detail-value status-renewal">In Renewal</p>
+                          </div>
+                        </div>
+                        <div class="contract-footer">
+                          <p class="last-updated">Last updated: 3 days ago</p>
+                          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/4527ed955b926e4db6ed0ea2c8ab933da01b8fc0?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="contract-actions" alt="Actions">
+                        </div>
+                      </article>
+
+                      <nav class="pagination">
+                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/934f2fbaa08496df15a657886e87a59818025e80?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="pagination-arrow" alt="Previous" id="prevPage">
+                        <button class="pagination-button active" id="page1">1</button>
+                        <button class="pagination-button" id="page2">2</button>
+                        <button class="pagination-button" id="page3">3</button>
+                        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/a3be7872cd172fccbba9dfb50b0e9af3a69d358d?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="pagination-arrow" alt="Next" id="nextPage">
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sidebar-column">
+                  <section class="insights-container">
+                    <h2 class="section-title">Contract Insights</h2>
+                    <div class="chart-container">
+                      <h3 class="chart-title">Contract Volume by Industry</h3>
+                      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/e716b3d838b80dcdc02fc2976542b39de2d6e18c?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="chart-image" alt="Industry Chart">
+                      <div class="chart-legend">
+                        <div class="legend-row">
+                          <div class="legend-item">
+                            <span class="legend-color blue"></span>
+                            <p class="legend-text">Textiles (42%)</p>
+                          </div>
+                          <div class="legend-item">
+                            <span class="legend-color green"></span>
+                            <p class="legend-text">Technology (28%)</p>
+                          </div>
+                        </div>
+                        <div class="legend-row">
+                          <div class="legend-item">
+                            <span class="legend-color orange"></span>
+                            <p class="legend-text">Agriculture (18%)</p>
+                          </div>
+                          <div class="legend-item">
+                            <span class="legend-color purple"></span>
+                            <p class="legend-text">Manufacturing (12%)</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="chart-container">
+                      <h3 class="chart-title">Monthly Contract Trends</h3>
+                      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/03904ff0171d0b2f090f3d41efcd7ea3c420a4cf?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="chart-image" alt="Trends Chart">
+                      <div class="chart-insight">
+                        <div class="insight-icon-container">
+                          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/aac5be09b4ed6c31e025872f1a71f3791f11834d?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="insight-icon" alt="Growth">
+                        </div>
+                        <p class="insight-text">12% contract growth in last 3 months</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="milestones-container">
+                    <h2 class="section-title">Upcoming Expiry & Milestones</h2>
+                    <div class="milestones-list">
+                      <ul class="milestone-items">
+                        <li class="milestone-item" id="milestone1">
+                          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/59fbbb18ec156bfcde70eef8c9b940c472c7a9fe?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="milestone-icon" alt="Payment">
+                          <div class="milestone-details">
+                            <h4 class="milestone-title">Payment Milestone Due</h4>
+                            <p class="milestone-company">Textile Manufacturer, Ludhiana • ₹2,50,000</p>
+                            <p class="milestone-due urgent">Due in 2 days</p>
+                          </div>
+                        </li>
+                        <li class="milestone-item" id="milestone2">
+                          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/f7bb69fe24531daa0b9f769f0da00252f9200ddb?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="milestone-icon" alt="Renewal">
+                          <div class="milestone-details">
+                            <h4 class="milestone-title">Contract Renewal</h4>
+                            <p class="milestone-company">Agro Industries, Gujarat • ₹7,25,000</p>
+                            <p class="milestone-due warning">Due in 5 days</p>
+                          </div>
+                        </li>
+                        <li class="milestone-item" id="milestone3">
+                          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/5815a80c748542afb29ab5283b78c81a135fd9c6?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="milestone-icon" alt="Delivery">
+                          <div class="milestone-details">
+                            <h4 class="milestone-title">Delivery Milestone</h4>
+                            <p class="milestone-company">Tech Solutions Ltd, Bengaluru</p>
+                            <p class="milestone-due">Due in 12 days</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </section>
+
+                  <section class="options-container">
+                    <h2 class="section-title">Additional Options</h2>
+                    <div class="options-list">
+                      <div class="option-item">
+                        <div class="option-details">
+                          <h4 class="option-title">Enable Blockchain Mode</h4>
+                          <p class="option-description">Add immutability to your contracts</p>
+                        </div>
+                        <label class="toggle-switch" id="blockchainToggle">
+                          <div class="toggle-slider"></div>
+                        </label>
+                      </div>
+                      <div class="option-item">
+                        <div class="option-details">
+                          <h4 class="option-title">Auto Reminder Setup</h4>
+                          <p class="option-description">Automated email/SMS reminders</p>
+                        </div>
+                        <label class="toggle-switch" id="reminderToggle">
+                          <div class="toggle-slider active"></div>
+                        </label>
+                      </div>
+                      <div class="option-item">
+                        <div class="option-details">
+                          <h4 class="option-title">AI Contract Health Monitoring</h4>
+                          <p class="option-description">Continuous risk monitoring</p>
+                        </div>
+                        <label class="toggle-switch" id="aiMonitoringToggle">
+                          <div class="toggle-slider active"></div>
+                        </label>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </section>
+          </main>
+          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d43988807537d091122f6cfcd10e3d22e60e80ba?placeholderIfAbsent=true&apiKey=db5929fc3bef4f25b061f0c78ff9f192" class="sidebar-toggle" alt="Toggle Sidebar" id="sidebarToggle">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Basic JavaScript for interactive elements
+    document.addEventListener('DOMContentLoaded', function() {
+      // Button click handlers
+      const buttons = [
+        'newContractBtn', 'newSmartContractBtn', 'uploadContractBtn',
+        'viewRiskReportBtn', 'downloadReportBtn', 'notifyBuyerBtn',
+        'renewContractBtn', 'reportDisputeBtn', 'exportAnalyticsBtn',
+        'clearFiltersBtn'
+      ];
+
+      buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.addEventListener('click', function() {
+            alert(`Button clicked: ${btnId}`);
+          });
+        }
+      });
+
+      // Contract cards click handler
+      const contractCards = document.querySelectorAll('.contract-card');
+      contractCards.forEach(card => {
+        card.addEventListener('click', function() {
+          alert(`Contract details: ${this.querySelector('.company-name').textContent}`);
+        });
+      });
+
+      // Filter selects click handler
+      const filterSelects = document.querySelectorAll('.filter-select');
+      filterSelects.forEach(select => {
+        select.addEventListener('click', function() {
+          alert(`Filter options for: ${this.previousElementSibling.textContent}`);
+        });
+      });
+
+      // Pagination click handler
+      const paginationButtons = document.querySelectorAll('.pagination-button');
+      paginationButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelector('.pagination-button.active').classList.remove('active');
+          this.classList.add('active');
+          alert(`Page ${this.textContent} selected`);
+        });
+      });
+
+      // Previous and Next page handlers
+      document.getElementById('prevPage').addEventListener('click', function() {
+        alert('Previous page');
+      });
+
+      document.getElementById('nextPage').addEventListener('click', function() {
+        alert('Next page');
+      });
+
+      // Toggle switches
+      const toggles = ['blockchainToggle', 'reminderToggle', 'aiMonitoringToggle'];
+      toggles.forEach(toggleId => {
+        const toggle = document.getElementById(toggleId);
+        if (toggle) {
+          toggle.addEventListener('click', function() {
+            const slider = this.querySelector('.toggle-slider');
+            slider.classList.toggle('active');
+            alert(`${toggleId} is now ${slider.classList.contains('active') ? 'ON' : 'OFF'}`);
+          });
+        }
+      });
+
+      // Milestone items click handler
+      const milestoneItems = document.querySelectorAll('.milestone-item');
+      milestoneItems.forEach(item => {
+        item.addEventListener('click', function() {
+          alert(`Milestone details: ${this.querySelector('.milestone-title').textContent}`);
+        });
+      });
+
+      // Sidebar toggle
+      document.getElementById('sidebarToggle').addEventListener('click', function() {
+        alert('Sidebar toggle clicked');
+      });
+
+      // User profile click handler
+      document.querySelector('.user-profile').addEventListener('click', function() {
+        alert('User profile clicked');
+      });
+
+      // Notification and message icons
+      document.querySelector('.notification-icon').addEventListener('click', function() {
+        alert('Notifications');
+      });
+
+      document.querySelector('.message-icon').addEventListener('click', function() {
+        alert('Messages');
+      });
+    });
+  </script>
+</body>
+</html>

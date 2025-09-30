@@ -1,0 +1,207 @@
+.heroimg{
+    background-size: 70% 100%;
+}
+.heroimg::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg,rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0) 100%);
+}
+
+.expand-container .panel {
+    flex: 1;
+    -webkit-transition: all 700ms ease-in-out;
+    transition: all 700ms ease-in-out;
+}
+.expand-container .panel .arrowsvg {
+  transition: all 0.5s ease-in-out;
+}
+.expand-container .panel.active .arrowsvg {
+  right: 10px;
+}
+.expand-container .panel .panelcontent{
+    transition: all 0.7s ease-in-out;
+}
+.expand-container .panel.active .panelcontent{
+    width: 96%;
+}
+.panel.even .panelcontent::before{
+  background: #f05134;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  transition: all 0.7s ease-in-out;
+}
+.panel.odd .panelcontent::before{
+    background: #252525;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: all 0.7s ease-in-out;
+}
+.even.active .panelcontent::before{
+  opacity: 0.8;
+}
+.odd.active .panelcontent::before{
+    opacity: 0.8;
+}
+.expand-container .panel .rotatediv{
+    writing-mode: vertical-rl;
+    transition: all .7s linear;
+}
+.expand-container .panel .rotatediv .icon-container svg{
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) rotate(180deg);
+    transition: all .3s ease-in-out;
+}
+/* .expand-container .panel .rotatediv:hover .icon-container svg{
+    top: 420px;
+    transition: all .3s ease-in-out;
+} */
+.expand-container .panel .panel-head{
+    font-style: normal;
+    line-height: 111%;
+}
+.expand-container .panel .panelc-flex{
+    z-index: 1;
+    transition: bottom .7s linear;
+    z-index: 1111;
+}
+.expand-container .panel .panelc-flex .panel-content{
+    transition: all .7s linear;
+}
+.expand-container .panel .panelc-flex .panel-content .prname {
+    font-style: normal;
+}
+.expand-container .panel.active{
+    flex: 6;
+}
+.expand-container .panel.active .rotatediv{
+    transform: rotate(0deg) translateX(0%);
+    opacity: 0;
+    left: 5%;
+    bottom: 90px;
+    display: none;
+}
+.explogo{
+    transition: all 0.7s linear;
+}
+.active .explogo{
+    transform:translateX(0%);
+    opacity: 1;
+    transition: all 0.7s linear;
+}
+.explogo .icon-container svg{
+    width: 80px;
+    height: 80px;
+}
+/* .expand-container .panel.active .panel-head{
+
+} */
+.expand-container .panel.active .panelc-flex{
+    transition: bottom .7s linear;
+}
+.expand-container .panel.active .panelc-flex .panel-content {
+    transition-delay: 4s;
+    opacity: 1;
+    transition: all 1s linear;
+    margin-left: 0px;
+    flex-direction: row;
+}
+@media (max-width:992px){
+    .expand-container .panel .rotatediv{
+        writing-mode: unset;
+    }
+    .expand-container .panel .rotatediv .icon-container svg{
+        position: unset;
+        transform: unset;
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+    }
+    .expand-container .panel.active .panelcontent{
+        width: 100%;
+    }
+    .expand-container .panel {
+        margin: 5px 0;
+        border-radius: 30px;
+    }
+    .expand-container .panel .panel-head{
+        bottom: unset;
+        left: unset;
+        transform:unset;
+        transform-origin: bottom center;
+        width: 100%;
+    }
+    .expand-container .panel .panelc-flex .panel-content{
+        margin-left: 0;
+        padding-left: 0;
+    }
+    .expand-container .panel .panelc-flex .panel-content .prname {
+        font-size: 32px;
+        line-height: 42px;
+    }
+    .expand-container .panel .panelc-flex .panel-content .panel-head2 {
+        font-size: 15px;
+    }
+    .expand-container .panel .panelc-flex .panel-content .panel-pos{
+        font-size: 10px;
+        padding-right: 10px;
+    }
+    .expand-container .panel.active .panel-head{
+        opacity: 0;
+    }
+    .expand-container .panel.active .panelc-flex{
+        bottom: 0;
+        left: 0;
+        text-align: center;
+        padding: 0 0px;
+    }
+    .expand-container .panel.active .panelc-flex .panel-content{
+        margin-left: 0;
+        padding: 25px 20px 0px;
+    }
+}
+@media (min-width:992px) and (max-width:1024px){
+    .expand-container .panel {
+        height: 30vh;
+    }
+}
+@media (max-width:640px){
+    .expand-container .panel.active{
+        flex: 4;
+    }
+    .expand-container .panel .panel-head{
+        bottom: 15px;
+        left: 70%;
+    }
+}
+.active .ftitle{
+    color: #f05134;
+}
+.ficon svg{
+    width: 36px;
+    height: 36px;
+    color: #262626;
+}
+.active .ficon svg{
+    color: #f05134;
+}
+.active .accicon{
+    color: #f05134;
+}

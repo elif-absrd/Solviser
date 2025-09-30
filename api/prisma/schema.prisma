@@ -1,0 +1,225 @@
+// This is the definitive Prisma schema for your application,
+// using Prisma-native UUIDs for maximum portability and reliability.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id                 String         @id @default(uuid())
+  name               String         @unique
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  ownerId            String?        @unique @map("owner_id")
+  razorpayCustomerId String?        @unique @map("razorpay_customer_id")
+  owner              User?          @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  subscription       Subscription?
+  users              User[]         @relation("OrganizationUsers")
+  roles              Role[]
+  auditLogs          AuditLog[]
+  contracts          Contract[]
+
+  @@map("organizations")
+}
+
+model SubscriptionPlan {
+  id             String         @id @default(uuid())
+  name           String         @unique
+  priceInr       Int            @map("price_inr")
+  razorpayPlanId String?        @unique @map("razorpay_plan_id")
+  isFree         Boolean        @default(false) @map("is_free")
+  features       String?        // Changed from Json to String for SQLite
+  createdAt      DateTime       @default(now()) @map("created_at")
+  subscriptions  Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                     String           @id @default(uuid())
+  organizationId         String           @unique @map("organization_id")
+  planId                 String           @map("plan_id")
+  razorpaySubscriptionId String?          @unique @map("razorpay_subscription_id")
+  razorpayPaymentId      String?          @map("razorpay_payment_id")
+  status                 String
+  currentPeriodStart     DateTime         @map("current_period_start")
+  currentPeriodEnd       DateTime         @map("current_period_end")
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+  organization           Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                   SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model User {
+  id                String          @id @default(uuid())
+  organizationId    String          @map("organization_id")
+  name              String
+  email             String          @unique
+  passwordHash      String          @map("password_hash")
+  isOwner           Boolean         @default(false) @map("is_owner")
+  tokenVersion     Int      @default(0) @map("token_version")
+  isSuperAdmin      Boolean         @default(false) @map("is_super_admin") // <-- THE FIRST FIX
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  organization      Organization    @relation("OrganizationUsers", fields: [organizationId], references: [id], onDelete: Cascade)
+  ownedOrganization Organization?   @relation("OrganizationOwner")
+  roles             UserRole[]
+  auditLogs         AuditLog[]
+  contracts         Contract[]
+
+  legalServiceProviderProfile LegalServiceProviderProfile?
+  @@map("users")
+}
+
+model Role {
+  id             String           @id @default(uuid())
+  organizationId String           @map("organization_id")
+  name           String
+  isSystemRole   Boolean          @default(false) @map("is_system_role") // <-- THE SECOND FIX
+  createdAt      DateTime         @default(now()) @map("created_at")
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  permissions    RolePermission[]
+  users          UserRole[]
+
+  @@unique([organizationId, name])
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  actionName  String           @unique @map("action_name")
+  description String?
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id")
+  permissionId String     @map("permission_id")
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId String @map("user_id")
+  roleId String @map("role_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  userId         String       @map("user_id")
+  action         String
+  details        String?        // Changed from Json to String for SQLite
+  createdAt      DateTime     @default(now()) @map("created_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model LegalServiceProviderProfile {
+  id               String    @id @default(uuid())
+  userId           String    @unique @map("user_id")
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status           String    @default("APPROVED") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED
+  
+  // Section 1: Organization Details
+  firmName         String?
+  contactNumber    String?
+  address          String?
+  city             String?
+  taluka           String?
+  state            String?
+  pincode          String?
+  email            String?
+  website          String?
+  registrationDate DateTime?
+  companyAge       Int?
+  annualTurnover   String?
+
+  // Section 2: Legal Services
+  serviceCategories String?       // Changed from String[] to String for SQLite - store as comma-separated
+  otherCategory     String?
+
+  // Section 3: KYC
+  aadhaarLast4     String?
+  pan              String?
+  gstin            String?
+
+  // Section 4: Bank Details
+  accountHolderName String?
+  accountNumber     String?
+  bankName          String?
+  ifscCode          String?
+  branchName        String?
+  upiId             String?
+  paymentMode       String?
+
+  agreedToTermsAt DateTime? @map("agreed_to_terms_at")
+  eSignStatus           String?   @map("e_sign_status") // e.g., 'COMPLETED', 'PENDING'
+  eSignTransactionId    String?   @map("e_sign_transaction_id")
+  eSignedAt             DateTime? @map("e_signed_at")
+  
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relation to dynamic services list
+  legalServiceOfferings LegalServiceOffering[]
+
+  @@map("legal_service_provider_profiles")
+}
+
+model LegalServiceOffering {
+  id          String   @id @default(uuid())
+  profileId   String   @map("profile_id")
+  profile     LegalServiceProviderProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  name        String
+  rate        Float
+  billingCycle String // PER_SERVICE, MONTHLY, YEARLY
+
+  @@map("legal_service_offerings")
+}
+
+model Contract {
+  id                     String       @id @default(uuid())
+  organizationId         String       @map("organization_id")
+  createdById            String       @map("created_by_id")
+  contractTitle          String       @map("contract_title")
+  contractType           String       @map("contract_type")
+  buyerName              String       @map("buyer_name")
+  buyerGstNumber         String?      @map("buyer_gst_number")
+  buyerRegisteredAddress String?      @map("buyer_registered_address")
+  contractValue          Float        @map("contract_value")
+  startDate              DateTime     @map("start_date")
+  endDate                DateTime     @map("end_date")
+  status                 String       @default("active") // active, completed, at_risk, defaulted, in_renewal, cancelled
+  termsAndClauses        String?      @map("terms_and_clauses")
+  riskScore              Int          @default(50) @map("risk_score")
+  industry               String       @default("General")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt              DateTime     @updatedAt @map("updated_at")
+  
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy              User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("contracts")
+}
