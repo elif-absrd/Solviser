@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import AddNewContractPage from "./AddNewContractPage";
+import ImportContractPage from "./ImportContractPage";
 import ContractList from "./ContractList";
 import ContractFilters from "./ContractFilters";
 import QuickActions from "./QuickActions";
@@ -28,8 +29,10 @@ interface ContractFilters {
   sortBy: string;
 }
 
+type ViewType = "dashboard" | "newContract" | "importContract";
+
 export default function SmartContractPage() {
-  const [currentView, setCurrentView] = useState<"dashboard" | "newContract">("dashboard");
+  const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [stats, setStats] = useState<ContractStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -103,6 +106,14 @@ export default function SmartContractPage() {
     }} />;
   }
 
+  if (currentView === "importContract") {
+    return <ImportContractPage onGoBack={() => {
+      setCurrentView("dashboard");
+      // Refresh stats when returning from import contract page
+      fetchStats(true);
+    }} />;
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -135,13 +146,22 @@ export default function SmartContractPage() {
                   >
                     <RotateCcw className={`refresh-icon ${isRefreshing ? 'spinning' : ''}`} />
                   </button>
-                  <button 
-                    className="primary-button"
-                    onClick={() => setCurrentView("newContract")}
-                  >
-                    <div className="button-icon">+</div>
-                    <span className="button-text">New Smart Contract</span>
-                  </button>
+                  <div className="contract-type-buttons">
+                    <button 
+                      className="primary-button"
+                      onClick={() => setCurrentView("newContract")}
+                    >
+                      <div className="button-icon">+</div>
+                      <span className="button-text">New Smart Contract</span>
+                    </button>
+                    <button 
+                      className="secondary-button"
+                      onClick={() => setCurrentView("importContract")}
+                    >
+                      <div className="button-icon">📋</div>
+                      <span className="button-text">Import Contract</span>
+                    </button>
+                  </div>
                 </div>
               </section>
 
@@ -236,7 +256,10 @@ export default function SmartContractPage() {
               {/* Quick Action Center */}
               <section className="quick-action-center">
                 <h2 className="section-title">Quick Action Center</h2>
-                <QuickActions onNewContract={() => setCurrentView("newContract")} />
+                <QuickActions 
+                  onNewContract={() => setCurrentView("newContract")} 
+                  onImportContract={() => setCurrentView("importContract")}
+                />
               </section>
 
               {/* Contracts Section */}
@@ -523,6 +546,11 @@ export default function SmartContractPage() {
           gap: 12px;
         }
 
+        .contract-type-buttons {
+          display: flex;
+          gap: 8px;
+        }
+
         .refresh-button {
           display: flex;
           align-items: center;
@@ -553,6 +581,37 @@ export default function SmartContractPage() {
 
         .refresh-icon.spinning {
           animation: spin 1s linear infinite;
+        }
+
+        .secondary-button {
+          border-radius: 8px;
+          background-color: #FFFFFF;
+          border: 1px solid #F05134;
+          display: flex;
+          align-items: stretch;
+          gap: 6px;
+          color: #F05134;
+          padding: 8px 16px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .secondary-button:hover {
+          background-color: #F05134;
+          color: #FFFFFF;
+        }
+
+        @media (max-width: 991px) {
+          .contract-type-buttons {
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .primary-button, .secondary-button {
+            padding: 10px 20px;
+          }
         }
 
         @keyframes spin {

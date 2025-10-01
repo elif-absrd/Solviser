@@ -3,15 +3,26 @@ import React from "react";
 
 interface StepperProps {
   currentStep: number;
+  totalSteps?: number;
 }
 
-export default function Stepper({ currentStep }: StepperProps) {
-  const steps = [
+export default function Stepper({ currentStep, totalSteps }: StepperProps) {
+  const defaultSteps = [
     { label: "Order Details" },
     { label: "Contract Details" },
     { label: "Terms & Clauses" },
     { label: "Review & Sign" },
   ];
+  
+  const importSteps = [
+    { label: "Basic Info" },
+    { label: "Item Details" },
+    { label: "Shipping & Payment" },
+    { label: "Documents & Bank" },
+    { label: "Terms & Conditions" },
+  ];
+  
+  const steps = totalSteps === 5 ? importSteps : defaultSteps;
 
   return (
     <div className="flex justify-between items-center my-8 px-4 relative">

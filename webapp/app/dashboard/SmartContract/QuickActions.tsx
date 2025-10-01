@@ -2,9 +2,10 @@ import React from "react";
 
 interface QuickActionsProps {
   onNewContract: () => void;
+  onImportContract: () => void;
 }
 
-export default function QuickActions({ onNewContract }: QuickActionsProps) {
+export default function QuickActions({ onNewContract, onImportContract }: QuickActionsProps) {
   const actionsRow1 = [
     {
       id: "newContract",
@@ -13,32 +14,38 @@ export default function QuickActions({ onNewContract }: QuickActionsProps) {
       onClick: onNewContract
     },
     {
+      id: "importContract",
+      title: "Import Smart Contract",
+      icon: "�",
+      onClick: onImportContract
+    },
+    {
       id: "uploadContract", 
       title: "Upload Contract Document",
-      icon: "📤",
+      icon: "�",
       onClick: () => alert("Upload contract feature coming soon!")
     },
     {
       id: "viewRiskReport",
       title: "View Risk Report", 
-      icon: "📊",
+      icon: "�",
       onClick: () => alert("Risk report feature coming soon!")
     },
     {
       id: "downloadReport",
       title: "Download All Contracts Report",
-      icon: "💾", 
+      icon: "�", 
       onClick: () => alert("Download report feature coming soon!")
-    },
+    }
+  ];
+
+  const actionsRow2 = [
     {
       id: "notifyBuyer",
       title: "Notify Buyer",
       icon: "🔔",
       onClick: () => alert("Notify buyer feature coming soon!")
-    }
-  ];
-
-  const actionsRow2 = [
+    },
     {
       id: "renewContract",
       title: "Renew Contract", 
