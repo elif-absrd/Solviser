@@ -64,7 +64,7 @@ export default function QuickActions({ onNewContract }: QuickActionsProps) {
       <style jsx>{`
         .action-buttons-container {
           border-radius: 8px;
-          background-color: #FFFFFF;
+          background-color: #F05134;
           box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
           display: flex;
           flex-direction: column;

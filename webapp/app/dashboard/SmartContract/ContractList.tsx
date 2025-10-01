@@ -45,6 +45,12 @@ export default function ContractList({ filters }: ContractListProps) {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure component only renders time-based content on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const fetchContracts = async (page = 1) => {
     try {
@@ -129,6 +135,9 @@ export default function ContractList({ filters }: ContractListProps) {
   };
 
   const getTimeAgo = (dateString: string) => {
+    // Prevent hydration mismatch by only calculating on client
+    if (!isClient) return 'Loading...';
+    
     const now = new Date();
     const past = new Date(dateString);
     const diff = now.getTime() - past.getTime();
@@ -511,7 +520,7 @@ export default function ContractList({ filters }: ContractListProps) {
               {/* Contract Footer */}
               <div className="contract-footer">
                 <p className="last-updated">
-                  Last updated: {getTimeAgo(contract.createdAt)}
+                  Last updated: <span suppressHydrationWarning>{getTimeAgo(contract.createdAt)}</span>
                 </p>
                 <div className="contract-actions">
                   View Details →

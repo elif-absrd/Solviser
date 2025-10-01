@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning={true}>
         {/* 2. Wrap your children with the Providers component */}
         <Providers>
           <main>{children}</main>

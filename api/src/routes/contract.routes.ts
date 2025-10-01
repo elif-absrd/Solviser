@@ -8,7 +8,11 @@ import {
   updateContract, 
   deleteContract,
   getContractInsights,
-  getUpcomingMilestones
+  getUpcomingMilestones,
+  archiveContract,
+  getContractsByRisk,
+  getFinancialSummary,
+  markContractSigned
 } from '../controllers/contract.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { can } from '../middleware/permission.middleware';
@@ -47,6 +51,22 @@ router.get(
   getUpcomingMilestones
 );
 
+// Get financial summary
+router.get(
+  '/financial-summary', 
+  authenticateToken, 
+  can('contract.view.all'), 
+  getFinancialSummary
+);
+
+// Get contracts by risk level
+router.get(
+  '/risk/:riskLevel', 
+  authenticateToken, 
+  can('contract.view.all'), 
+  getContractsByRisk
+);
+
 // Create a new contract
 router.post(
   '/', 
@@ -69,6 +89,22 @@ router.put(
   authenticateToken, 
   can('contract.create'), 
   updateContract
+);
+
+// Archive a contract
+router.patch(
+  '/:id/archive', 
+  authenticateToken, 
+  can('contract.create'), 
+  archiveContract
+);
+
+// Mark contract as signed
+router.patch(
+  '/:id/sign', 
+  authenticateToken, 
+  can('contract.create'), 
+  markContractSigned
 );
 
 // Delete a contract

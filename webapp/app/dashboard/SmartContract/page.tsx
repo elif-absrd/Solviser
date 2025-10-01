@@ -155,7 +155,7 @@ export default function SmartContractPage() {
                     </div>
                     <span className="stat-value">{stats?.activeContracts.count || 0}</span>
                   </div>
-                  <div className={`stat-trend ${stats?.activeContracts.trend?.direction === 'up' ? 'positive' : stats?.activeContracts.trend?.direction === 'down' ? 'negative' : 'info'}`}>
+                  <div className={`stat-trend ${stats?.activeContracts.trend?.direction === 'up' ? 'positive' : stats?.activeContracts.trend?.direction === 'down' ? 'negative' : 'info'}`} suppressHydrationWarning>
                     <div className="trend-icon-container">
                       <div className="trend-icon">{stats?.activeContracts.trend?.direction === 'up' ? '↗' : stats?.activeContracts.trend?.direction === 'down' ? '↓' : '→'}</div>
                     </div>
@@ -172,7 +172,7 @@ export default function SmartContractPage() {
                     </div>
                     <span className="stat-value">{stats?.completedContracts.count || 0}</span>
                   </div>
-                  <div className={`stat-trend ${stats?.completedContracts.trend?.direction === 'up' ? 'positive' : stats?.completedContracts.trend?.direction === 'down' ? 'negative' : 'info'}`}>
+                  <div className={`stat-trend ${stats?.completedContracts.trend?.direction === 'up' ? 'positive' : stats?.completedContracts.trend?.direction === 'down' ? 'negative' : 'info'}`} suppressHydrationWarning>
                     <div className="trend-icon-container">
                       <div className="trend-icon">{stats?.completedContracts.trend?.direction === 'up' ? '↗' : stats?.completedContracts.trend?.direction === 'down' ? '↓' : '✓'}</div>
                     </div>
@@ -189,7 +189,7 @@ export default function SmartContractPage() {
                     </div>
                     <span className="stat-value">{stats?.contractsAtRisk.count || 0}</span>
                   </div>
-                  <div className={`stat-trend ${stats?.contractsAtRisk.trend?.direction === 'up' ? 'negative' : stats?.contractsAtRisk.trend?.direction === 'down' ? 'positive' : 'warning'}`}>
+                  <div className={`stat-trend ${stats?.contractsAtRisk.trend?.direction === 'up' ? 'negative' : stats?.contractsAtRisk.trend?.direction === 'down' ? 'positive' : 'warning'}`} suppressHydrationWarning>
                     <div className="trend-icon-container">
                       <div className="trend-icon">{stats?.contractsAtRisk.trend?.direction === 'up' ? '↗' : stats?.contractsAtRisk.trend?.direction === 'down' ? '↓' : '⚠'}</div>
                     </div>
@@ -206,7 +206,7 @@ export default function SmartContractPage() {
                     </div>
                     <span className="stat-value">{stats?.defaultedContracts.count || 0}</span>
                   </div>
-                  <div className={`stat-trend ${stats?.defaultedContracts.trend?.direction === 'up' ? 'negative' : stats?.defaultedContracts.trend?.direction === 'down' ? 'positive' : 'warning'}`}>
+                  <div className={`stat-trend ${stats?.defaultedContracts.trend?.direction === 'up' ? 'negative' : stats?.defaultedContracts.trend?.direction === 'down' ? 'positive' : 'warning'}`} suppressHydrationWarning>
                     <div className="trend-icon-container">
                       <div className="trend-icon">{stats?.defaultedContracts.trend?.direction === 'up' ? '↗' : stats?.defaultedContracts.trend?.direction === 'down' ? '↓' : '⚠'}</div>
                     </div>
@@ -223,7 +223,7 @@ export default function SmartContractPage() {
                     </div>
                     <span className="stat-value">{stats?.inRenewal.count || 0}</span>
                   </div>
-                  <div className={`stat-trend ${stats?.inRenewal.trend?.direction === 'up' ? 'positive' : stats?.inRenewal.trend?.direction === 'down' ? 'negative' : 'info'}`}>
+                  <div className={`stat-trend ${stats?.inRenewal.trend?.direction === 'up' ? 'positive' : stats?.inRenewal.trend?.direction === 'down' ? 'negative' : 'info'}`} suppressHydrationWarning>
                     <div className="trend-icon-container">
                       <div className="trend-icon">{stats?.inRenewal.trend?.direction === 'up' ? '↗' : stats?.inRenewal.trend?.direction === 'down' ? '↓' : '🔄'}</div>
                     </div>

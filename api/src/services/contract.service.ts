@@ -1,5 +1,14 @@
 // File: api/src/services/contract.service.ts
+// File: api/src/services/contract.service.ts
 import prisma from '../prisma';
+import {
+  ContractCreateInput,
+  ContractUpdateInput,
+  ContractFinancialSummary,
+  ContractMilestone,
+  ContractInsights,
+  RiskLevel
+} from '../types/contract.types';
 
 export interface ContractFilters {
   buyer?: string;
@@ -140,26 +149,83 @@ export const getContractStats = async (organizationId: string) => {
   };
 };
 
-export const createContract = async (organizationId: string, userId: string, contractData: any) => {
-  // Calculate risk score based on contract data (simplified)
+export const createContract = async (organizationId: string, userId: string, contractData: ContractCreateInput) => {
+  // Generate unique contract number
+  const contractNumber = await generateContractNumber(organizationId);
+  
+  // Calculate risk score based on contract data
   const riskScore = calculateRiskScore(contractData);
+  
+  // Calculate review dates
+  const startDate = new Date(contractData.startDate);
+  const endDate = new Date(contractData.endDate);
+  const nextReviewDate = new Date(startDate);
+  nextReviewDate.setMonth(nextReviewDate.getMonth() + 3); // Review every 3 months
   
   const contract = await prisma.contract.create({
     data: {
       organizationId,
       createdById: userId,
+      
+      // Basic Information
+      contractTitle: contractData.contractTitle,
+      contractNumber: contractNumber,
+      contractType: contractData.contractType,
+      description: contractData.description,
+      
+      // Buyer Information
       buyerName: contractData.buyerName,
       buyerGstNumber: contractData.gstNumber,
       buyerRegisteredAddress: contractData.registeredAddress,
-      contractTitle: contractData.contractTitle,
-      contractType: contractData.contractType,
-      startDate: new Date(contractData.startDate),
-      endDate: new Date(contractData.endDate),
-      contractValue: parseFloat(contractData.contractValue),
-      termsAndClauses: contractData.termsAndClauses,
+      buyerContactPerson: contractData.buyerContactPerson,
+      buyerEmail: contractData.buyerEmail,
+      buyerPhone: contractData.buyerPhone,
+      
+      // Financial Information
+      contractValue: typeof contractData.contractValue === 'string' 
+        ? parseFloat(contractData.contractValue) 
+        : contractData.contractValue,
+      currency: contractData.currency || 'INR',
+      paymentTerms: contractData.paymentTerms,
+      advancePayment: contractData.advancePayment 
+        ? (typeof contractData.advancePayment === 'string' 
+            ? parseFloat(contractData.advancePayment) 
+            : contractData.advancePayment)
+        : 0,
+      penaltyClause: contractData.penaltyClause,
+      
+      // Timeline
+      startDate,
+      endDate,
+      renewalDate: contractData.renewalDate ? new Date(contractData.renewalDate) : null,
+      noticePeriodDays: contractData.noticePeriodDays || 30,
+      nextReviewDate,
+      
+      // Status & Risk
       status: 'active',
       riskScore,
+      riskFactors: JSON.stringify(assessRiskFactors(contractData)),
+      
+      // Legal & Compliance
+      termsAndClauses: contractData.termsAndClauses,
+      governingLaw: contractData.governingLaw || 'Indian Contract Act, 1872',
+      jurisdiction: contractData.jurisdiction || 'India',
+      confidentialityClause: contractData.confidentialityClause || false,
+      forceMapjeure: contractData.forceMapjeure || false,
+      
+      // Business Context
       industry: contractData.industry || 'General',
+      priority: contractData.priority || 'medium',
+      tags: contractData.tags ? JSON.stringify(contractData.tags) : null,
+      
+      // Document Management
+      documentPath: contractData.documentPath,
+      notes: contractData.notes,
+    },
+    include: {
+      createdBy: {
+        select: { name: true, email: true }
+      }
     }
   });
 
@@ -177,15 +243,30 @@ export const getContractById = async (id: string, organizationId: string) => {
   });
 };
 
-export const updateContract = async (id: string, organizationId: string, updateData: any) => {
+export const updateContract = async (id: string, organizationId: string, userId: string, updateData: ContractUpdateInput) => {
   // Recalculate risk score if relevant data changed
   const riskScore = updateData.contractValue || updateData.endDate ? 
     calculateRiskScore(updateData) : undefined;
 
-  const dataToUpdate: any = { ...updateData };
+  const dataToUpdate: any = { 
+    ...updateData,
+    lastModifiedById: userId,
+    updatedAt: new Date()
+  };
+  
   if (riskScore !== undefined) {
     dataToUpdate.riskScore = riskScore;
+    dataToUpdate.riskFactors = JSON.stringify(assessRiskFactors(updateData));
   }
+
+  // Handle date fields
+  if (updateData.startDate) dataToUpdate.startDate = new Date(updateData.startDate);
+  if (updateData.endDate) dataToUpdate.endDate = new Date(updateData.endDate);
+  if (updateData.renewalDate) dataToUpdate.renewalDate = new Date(updateData.renewalDate);
+  if (updateData.signedDate) dataToUpdate.signedDate = new Date(updateData.signedDate);
+
+  // Handle JSON fields
+  if (updateData.tags) dataToUpdate.tags = JSON.stringify(updateData.tags);
 
   return await prisma.contract.update({
     where: { id },
@@ -222,9 +303,9 @@ export const getContractInsights = async (organizationId: string) => {
     _sum: { contractValue: true }
   });
 
-  const totalContracts = industryStats.reduce((sum, stat) => sum + stat._count.industry, 0);
+  const totalContracts = industryStats.reduce((sum: number, stat: any) => sum + stat._count.industry, 0);
 
-  const industryDistribution = industryStats.map(stat => ({
+  const industryDistribution = industryStats.map((stat: any) => ({
     industry: stat.industry,
     count: stat._count.industry,
     percentage: Math.round((stat._count.industry / totalContracts) * 100),
@@ -271,7 +352,7 @@ export const getUpcomingMilestones = async (organizationId: string) => {
     take: 10
   });
 
-  const milestones = expiringContracts.map(contract => {
+  const milestones = expiringContracts.map((contract: any) => {
     const daysUntilExpiry = Math.ceil(
       (contract.endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -296,12 +377,101 @@ export const getUpcomingMilestones = async (organizationId: string) => {
   return milestones;
 };
 
+// Archive old contracts
+export const archiveContract = async (id: string, organizationId: string, userId: string) => {
+  return await prisma.contract.update({
+    where: { id },
+    data: {
+      isArchived: true,
+      lastModifiedById: userId,
+      updatedAt: new Date()
+    }
+  });
+};
+
+// Get contracts by risk level
+export const getContractsByRisk = async (organizationId: string, riskLevel: 'low' | 'medium' | 'high') => {
+  let riskRange: { gte?: number; lte?: number } = {};
+  
+  switch (riskLevel) {
+    case 'low':
+      riskRange = { lte: 30 };
+      break;
+    case 'medium':
+      riskRange = { gte: 31, lte: 70 };
+      break;
+    case 'high':
+      riskRange = { gte: 71 };
+      break;
+  }
+
+  return await prisma.contract.findMany({
+    where: {
+      organizationId,
+      riskScore: riskRange,
+      isArchived: false
+    },
+    include: {
+      createdBy: {
+        select: { name: true, email: true }
+      }
+    },
+    orderBy: { riskScore: 'desc' }
+  });
+};
+
+// Get financial summary
+export const getFinancialSummary = async (organizationId: string) => {
+  const contracts = await prisma.contract.findMany({
+    where: { 
+      organizationId,
+      status: { in: ['active', 'in_renewal'] },
+      isArchived: false
+    },
+    select: {
+      contractValue: true,
+      currency: true,
+      advancePayment: true,
+      status: true
+    }
+  });
+
+  const totalValue = contracts.reduce((sum: number, contract: any) => sum + contract.contractValue, 0);
+  const totalAdvance = contracts.reduce((sum: number, contract: any) => sum + (contract.advancePayment || 0), 0);
+  const activeContracts = contracts.filter((c: any) => c.status === 'active').length;
+  const renewalContracts = contracts.filter((c: any) => c.status === 'in_renewal').length;
+
+  return {
+    totalContractValue: totalValue,
+    totalAdvanceReceived: totalAdvance,
+    pendingAmount: totalValue - totalAdvance,
+    activeContracts,
+    renewalContracts,
+    averageContractValue: contracts.length > 0 ? totalValue / contracts.length : 0
+  };
+};
+
+// Mark contract as signed
+export const markContractSigned = async (id: string, organizationId: string, userId: string, signedDocumentPath?: string) => {
+  return await prisma.contract.update({
+    where: { id },
+    data: {
+      isSigned: true,
+      signedDate: new Date(),
+      signedDocumentPath: signedDocumentPath,
+      lastModifiedById: userId,
+      status: 'active' // Typically signed contracts become active
+    }
+  });
+};
+
 // Helper function to calculate risk score
-function calculateRiskScore(contractData: any): number {
+function calculateRiskScore(contractData: ContractCreateInput | ContractUpdateInput): number {
   let score = 50; // Base score
 
   // Adjust based on contract value (higher value = higher risk)
-  const value = parseFloat(contractData.contractValue || 0);
+  const contractValue = contractData.contractValue || 0;
+  const value = typeof contractValue === 'string' ? parseFloat(contractValue) : contractValue;
   if (value > 1000000) score += 20;
   else if (value > 500000) score += 10;
   else if (value < 100000) score -= 10;
@@ -314,8 +484,65 @@ function calculateRiskScore(contractData: any): number {
     else if (months < 3) score += 10;
   }
 
-  // Random variation for demo purposes
-  score += Math.floor(Math.random() * 20) - 10;
+  // Industry-specific risks
+  const highRiskIndustries = ['Construction', 'Software Development', 'Consulting'];
+  if (contractData.industry && highRiskIndustries.includes(contractData.industry)) score += 10;
+
+  // Payment terms risk
+  if (contractData.paymentTerms && contractData.paymentTerms.includes('NET60')) score += 15;
+  else if (contractData.paymentTerms && contractData.paymentTerms.includes('NET30')) score += 5;
 
   return Math.max(0, Math.min(100, score));
+}
+
+// Helper function to generate unique contract number
+async function generateContractNumber(organizationId: string): Promise<string> {
+  const year = new Date().getFullYear();
+  const month = String(new Date().getMonth() + 1).padStart(2, '0');
+  
+  // Get count of contracts this month for this organization
+  const startOfMonth = new Date(year, new Date().getMonth(), 1);
+  const endOfMonth = new Date(year, new Date().getMonth() + 1, 0);
+  
+  const contractCount = await prisma.contract.count({
+    where: {
+      organizationId,
+      createdAt: {
+        gte: startOfMonth,
+        lte: endOfMonth
+      }
+    }
+  });
+  
+  const sequence = String(contractCount + 1).padStart(3, '0');
+  return `CON-${year}${month}-${sequence}`;
+}
+
+// Helper function to assess risk factors
+function assessRiskFactors(contractData: ContractCreateInput | ContractUpdateInput): string[] {
+  const riskFactors: string[] = [];
+  
+  const contractValue = contractData.contractValue || 0;
+  const value = typeof contractValue === 'string' ? parseFloat(contractValue) : contractValue;
+  
+  if (!contractData.startDate || !contractData.endDate) return riskFactors;
+  
+  const startDate = new Date(contractData.startDate);
+  const endDate = new Date(contractData.endDate);
+  const durationDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+  
+  if (value > 1000000) riskFactors.push('High Contract Value');
+  if (durationDays > 365) riskFactors.push('Long Duration Contract');
+  
+  const advancePayment = contractData.advancePayment || 0;
+  const advance = typeof advancePayment === 'string' ? parseFloat(advancePayment) : advancePayment;
+  if (advance < value * 0.1) {
+    riskFactors.push('Low Advance Payment');
+  }
+  if (contractData.paymentTerms && contractData.paymentTerms.includes('NET60')) {
+    riskFactors.push('Extended Payment Terms');
+  }
+  if (!contractData.penaltyClause) riskFactors.push('No Penalty Clause');
+  
+  return riskFactors;
 }

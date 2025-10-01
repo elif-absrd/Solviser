@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -203,23 +203,74 @@ model Contract {
   id                     String       @id @default(uuid())
   organizationId         String       @map("organization_id")
   createdById            String       @map("created_by_id")
+  
+  // Basic Contract Information
   contractTitle          String       @map("contract_title")
-  contractType           String       @map("contract_type")
+  contractType           String       @map("contract_type") // service, purchase, lease, etc.
+  contractNumber         String?      @unique @map("contract_number") // Auto-generated contract reference
+  description            String?      // Brief contract description
+  
+  // Buyer/Client Information
   buyerName              String       @map("buyer_name")
   buyerGstNumber         String?      @map("buyer_gst_number")
   buyerRegisteredAddress String?      @map("buyer_registered_address")
+  buyerContactPerson     String?      @map("buyer_contact_person")
+  buyerEmail             String?      @map("buyer_email")
+  buyerPhone             String?      @map("buyer_phone")
+  
+  // Financial Information
   contractValue          Float        @map("contract_value")
+  currency               String       @default("INR")
+  paymentTerms           String?      @map("payment_terms") // NET30, advance, milestone-based
+  advancePayment         Float?       @default(0) @map("advance_payment")
+  penaltyClause          String?      @map("penalty_clause")
+  
+  // Timeline Information
   startDate              DateTime     @map("start_date")
   endDate                DateTime     @map("end_date")
-  status                 String       @default("active") // active, completed, at_risk, defaulted, in_renewal, cancelled
+  renewalDate            DateTime?    @map("renewal_date")
+  noticePeriodDays       Int?         @default(30) @map("notice_period_days")
+  
+  // Contract Status & Risk
+  status                 String       @default("active") // active, completed, at_risk, defaulted, in_renewal, cancelled, expired
+  riskScore              Int          @default(50) @map("risk_score") // 0-100
+  riskFactors            String?      @map("risk_factors") // JSON string of risk assessment
+  lastReviewDate         DateTime?    @map("last_review_date")
+  nextReviewDate         DateTime?    @map("next_review_date")
+  
+  // Legal & Compliance
   termsAndClauses        String?      @map("terms_and_clauses")
-  riskScore              Int          @default(50) @map("risk_score")
+  governingLaw           String?      @default("Indian Contract Act, 1872") @map("governing_law")
+  jurisdiction           String?      @default("India") 
+  confidentialityClause  Boolean      @default(false) @map("confidentiality_clause")
+  forceMapjeure          Boolean      @default(false) @map("force_majeure")
+  
+  // Business Context
   industry               String       @default("General")
+  priority               String       @default("medium") // high, medium, low
+  tags                   String?      // JSON array of tags
+  
+  // Document Management
+  documentPath           String?      @map("document_path") // Path to contract PDF/DOC
+  signedDocumentPath     String?      @map("signed_document_path")
+  isSigned               Boolean      @default(false) @map("is_signed")
+  signedDate             DateTime?    @map("signed_date")
+  
+  // Tracking & Audit
+  lastModifiedById       String?      @map("last_modified_by_id")
+  notes                  String?      // Internal notes
+  isArchived             Boolean      @default(false) @map("is_archived")
   createdAt              DateTime     @default(now()) @map("created_at")
   updatedAt              DateTime     @updatedAt @map("updated_at")
   
+  // Relations
   organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdBy              User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  
+  // Additional Relations (to be added later)
+  // milestones             ContractMilestone[]
+  // amendments             ContractAmendment[]
+  // payments               ContractPayment[]
 
   @@map("contracts")
 }

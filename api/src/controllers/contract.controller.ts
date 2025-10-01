@@ -95,7 +95,7 @@ export const updateContract = async (req: Request, res: Response) => {
     const { id } = req.params;
     const updateData = req.body;
     
-    const contract = await contractService.updateContract(id, user.organizationId, updateData);
+    const contract = await contractService.updateContract(id, user.organizationId, user.id, updateData);
     res.json({ message: 'Contract updated successfully!', contract });
   } catch (error: any) {
     logger.error(`Update Contract Error: ${error.message}`, {
@@ -143,5 +143,72 @@ export const getUpcomingMilestones = async (req: Request, res: Response) => {
       userId: req.user?.userId,
     });
     res.status(500).json({ error: 'Failed to retrieve upcoming milestones.' });
+  }
+};
+
+// Archive contract
+export const archiveContract = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const { id } = req.params;
+    
+    const contract = await contractService.archiveContract(id, user.organizationId, user.id);
+    res.json({ message: 'Contract archived successfully!', contract });
+  } catch (error: any) {
+    logger.error(`Archive Contract Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to archive contract.' });
+  }
+};
+
+// Get contracts by risk level
+export const getContractsByRisk = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const { riskLevel } = req.params as { riskLevel: 'low' | 'medium' | 'high' };
+    
+    if (!['low', 'medium', 'high'].includes(riskLevel)) {
+      return res.status(400).json({ error: 'Invalid risk level. Must be low, medium, or high.' });
+    }
+    
+    const contracts = await contractService.getContractsByRisk(user.organizationId, riskLevel);
+    res.json(contracts);
+  } catch (error: any) {
+    logger.error(`Get Contracts By Risk Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to retrieve contracts by risk level.' });
+  }
+};
+
+// Get financial summary
+export const getFinancialSummary = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const summary = await contractService.getFinancialSummary(user.organizationId);
+    res.json(summary);
+  } catch (error: any) {
+    logger.error(`Get Financial Summary Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to retrieve financial summary.' });
+  }
+};
+
+// Mark contract as signed
+export const markContractSigned = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const { id } = req.params;
+    const { signedDocumentPath } = req.body;
+    
+    const contract = await contractService.markContractSigned(id, user.organizationId, user.id, signedDocumentPath);
+    res.json({ message: 'Contract marked as signed successfully!', contract });
+  } catch (error: any) {
+    logger.error(`Mark Contract Signed Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to mark contract as signed.' });
   }
 };
