@@ -212,3 +212,31 @@ export const markContractSigned = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to mark contract as signed.' });
   }
 };
+
+// Get dropdown options by category
+export const getDropdownOptions = async (req: Request, res: Response) => {
+  try {
+    const { category } = req.params;
+    const options = await contractService.getDropdownOptions(category);
+    res.json(options);
+  } catch (error: any) {
+    logger.error(`Get Dropdown Options Error: ${error.message}`, {
+      category: req.params.category,
+    });
+    res.status(500).json({ error: 'Failed to retrieve dropdown options.' });
+  }
+};
+
+// Get contract templates by type
+export const getContractTemplates = async (req: Request, res: Response) => {
+  try {
+    const { type } = req.params;
+    const templates = await contractService.getContractTemplates(type);
+    res.json(templates);
+  } catch (error: any) {
+    logger.error(`Get Contract Templates Error: ${error.message}`, {
+      type: req.params.type,
+    });
+    res.status(500).json({ error: 'Failed to retrieve contract templates.' });
+  }
+};

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Stepper from './Stepper';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useContractDropdowns, useContractTemplate } from '../../../hooks/useContractDropdowns';
 
 interface ImportContractPageProps {
   onGoBack: () => void;
@@ -22,6 +23,7 @@ interface Item {
 
 interface ImportFormData {
   // Basic Contract Info
+  contractId: string;
   contractType: string;
   gstin: string;
   firmName: string;
@@ -79,12 +81,7 @@ interface ImportFormData {
   
   // Acceptance
   termsAccepted: {
-    general: boolean;
-    shipping: boolean;
-    payment: boolean;
-    delivery: boolean;
-    dispute: boolean;
-    others: boolean;
+    allTerms: boolean; // Changed to single checkbox
   };
 }
 
@@ -93,12 +90,15 @@ const pineOrigins = ["Uruguay", "New Zealand", "Australia", "Southern Yellow Pin
 const sypSub = ["Lumbers", "Logs Unedged"];
 
 export default function ImportContractPage({ onGoBack }: ImportContractPageProps) {
+  const { dropdowns, loading: dropdownsLoading } = useContractDropdowns();
+  const { template, loading: templateLoading } = useContractTemplate('import');
+  
   const [currentStep, setCurrentStep] = useState(0);
-  const [activeTab, setActiveTab] = useState('general');
   const [showPaymentPeriodModal, setShowPaymentPeriodModal] = useState(false);
   const [customPaymentPeriod, setCustomPaymentPeriod] = useState('');
   
   const [formData, setFormData] = useState<ImportFormData>({
+    contractId: 'IMP-2025-0001',
     contractType: 'Import',
     gstin: '',
     firmName: '',
@@ -168,15 +168,26 @@ Time limits and expert panel provisions.`,
 Confidentiality, IP policies.
 Cancellations and termination clauses.`,
     
+    // Single acceptance for all terms
     termsAccepted: {
-      general: false,
-      shipping: false,
-      payment: false,
-      delivery: false,
-      dispute: false,
-      others: false
+      allTerms: false
     }
   });
+
+  // Load template data when available
+  useEffect(() => {
+    if (template) {
+      setFormData(prev => ({
+        ...prev,
+        generalTerms: template.generalTerms || '',
+        shippingTermsText: template.shippingTerms || '',
+        paymentTermsText: template.paymentTerms || '',
+        deliveryTerms: template.deliveryTerms || '',
+        disputeTerms: template.disputeTerms || '',
+        otherTerms: template.otherTerms || ''
+      }));
+    }
+  }, [template]);
 
   // Auto-calculate totals when items change
   useEffect(() => {
@@ -231,6 +242,9 @@ Cancellations and termination clauses.`,
       })
     }));
   };
+
+  // Add updateItem as alias for handleItemChange for consistency with render code
+  const updateItem = handleItemChange;
 
   const addItem = () => {
     const newItem: Item = {
@@ -359,228 +373,283 @@ Cancellations and termination clauses.`,
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const usableWidth = pageWidth - (margin * 2);
 
-    // Add logo
+    // Helper function to check if we need a new page
+    const checkPageBreak = (yPos: number, requiredSpace: number) => {
+      if (yPos + requiredSpace > pageHeight - 20) {
+        doc.addPage();
+        return 30; // Reset Y position for new page
+      }
+      return yPos;
+    };
+
+    // Header with logo and title
+    let yPosition = 20;
     try {
-      doc.addImage('/blacklogo.png', 'PNG', 15, 15, 40, 10);
+      doc.addImage('/blacklogo.png', 'PNG', margin, yPosition, 40, 10);
     } catch (e) {
-      console.error("Could not add logo. Make sure it's in your /public folder.", e);
-      doc.setFontSize(20);
-      doc.text("Solviser", 15, 25);
+      console.warn("Logo not found, using text header");
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SOLVISER', margin, yPosition + 6);
     }
 
-    // Header
-    doc.setFontSize(18);
-    doc.text("Import Smart Contract", pageWidth - 15, 25, { align: 'right' });
-    doc.setFontSize(10);
-    doc.text(`Contract ID: IMP-2025-0001`, pageWidth - 15, 32, { align: 'right' });
-    doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, pageWidth - 15, 37, { align: 'right' });
-
-    doc.line(15, 45, pageWidth - 15, 45);
-
-    let yPosition = 55;
-
-    // Basic Information Section
-    doc.setFontSize(14);
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text("Contract Information", 15, yPosition);
-    yPosition += 10;
-
+    doc.text('IMPORT SMART CONTRACT', pageWidth / 2, yPosition + 5, { align: 'center' });
+    
+    yPosition += 15;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const basicInfo = [
-      ['Contract Type', formData.contractType],
-      ['GSTIN', formData.gstin],
-      ['Firm Name', formData.firmName],
-      ['GST State', formData.gstState],
-      ['Supplier Name', formData.supplierName],
-      ['Supplier Email', formData.supplierEmail],
-      ['Supplier Phone', formData.supplierPhone]
+    doc.text(`Contract ID: ${formData.contractId || 'IMP-2025-0001'}`, pageWidth / 2, yPosition, { align: 'center' });
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition + 5, { align: 'center' });
+    
+    yPosition += 20;
+
+    // Contract Information Section
+    yPosition = checkPageBreak(yPosition, 60);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Contract Information", margin, yPosition);
+    yPosition += 10;
+
+    const contractInfo = [
+      ['Contract Type', formData.contractType || 'Import'],
+      ['GSTIN', formData.gstin || 'Not provided'],
+      ['Firm Name', formData.firmName || 'Not provided'],
+      ['GST State', formData.gstState || 'Not provided'],
+      ['Supplier Name', formData.supplierName || 'Not provided'],
+      ['Supplier Email', formData.supplierEmail || 'Not provided'],
+      ['Supplier Phone', formData.supplierPhone || 'Not provided']
     ];
 
     autoTable(doc, {
       startY: yPosition,
-      body: basicInfo,
+      body: contractInfo,
       theme: 'grid',
-      tableWidth: 'wrap',
+      tableWidth: usableWidth,
       columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 40 },
-        1: { cellWidth: 80 }
+        0: { fontStyle: 'bold', cellWidth: usableWidth * 0.3 },
+        1: { cellWidth: usableWidth * 0.7 }
       },
-      margin: { left: 15 }
+      margin: { left: margin, right: margin },
+      styles: { fontSize: 9, cellPadding: 3 }
     });
 
     yPosition = (doc as any).lastAutoTable.finalY + 15;
 
     // Items Section
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Item Details", 15, yPosition);
-    yPosition += 10;
+    if (formData.items.length > 0) {
+      yPosition = checkPageBreak(yPosition, 80);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Item Details", margin, yPosition);
+      yPosition += 10;
 
-    const itemHeaders = [['Item Name', 'Origin', 'Sub-Category', 'Quantity', 'Rate (USD)', 'Amount (USD)']];
-    const itemBody = formData.items.map(item => [
-      item.itemName,
-      item.origin,
-      item.subCategory,
-      item.qty,
-      parseFloat(item.rate).toFixed(2),
-      item.amount.toFixed(2)
-    ]);
+      const itemHeaders = [['Item Name', 'Origin', 'Sub-Category', 'Qty', 'Rate (USD)', 'Amount (USD)']];
+      const itemBody = formData.items.map(item => [
+        item.itemName || 'Not specified',
+        item.origin || 'Not specified',
+        item.subCategory || 'Not specified',
+        item.qty || '0',
+        parseFloat(item.rate || '0').toFixed(2),
+        item.amount.toFixed(2)
+      ]);
 
-    autoTable(doc, {
-      startY: yPosition,
-      head: itemHeaders,
-      body: itemBody,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [35, 31, 32]
-      },
-      margin: { left: 15, right: 15 }
-    });
+      autoTable(doc, {
+        startY: yPosition,
+        head: itemHeaders,
+        body: itemBody,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [240, 81, 52],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          3: { halign: 'right' },
+          4: { halign: 'right' },
+          5: { halign: 'right' }
+        },
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9, cellPadding: 3 }
+      });
 
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
 
-    // Total Amount
-    const totalData = [
-      ['Total Amount', `${formData.totalAmount.toFixed(2)} USD`],
-      ['Amount in Words', formData.amountInWords]
-    ];
-
-    autoTable(doc, {
-      startY: yPosition,
-      body: totalData,
-      theme: 'plain',
-      tableWidth: 'wrap',
-      margin: { left: pageWidth / 2 },
-      columnStyles: {
-        0: { fontStyle: 'bold', halign: 'right' },
-        1: { halign: 'right' }
-      },
-      didParseCell: (data) => {
-        if (data.row.index === 0) {
-          data.cell.styles.fontStyle = 'bold';
-          data.cell.styles.fontSize = 12;
-        }
-      }
-    });
-
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
-
-    // Check if we need a new page
-    if (yPosition > pageHeight - 80) {
-      doc.addPage();
-      yPosition = 30;
+      // Total Amount
+      yPosition = checkPageBreak(yPosition, 30);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Total Amount: $${formData.totalAmount.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      yPosition += 6;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Amount in Words: ${formData.amountInWords}`, margin, yPosition);
+      yPosition += 15;
     }
 
     // Shipping & Payment Terms
+    yPosition = checkPageBreak(yPosition, 60);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text("Shipping & Payment Terms", 15, yPosition);
+    doc.text("Shipping & Payment Terms", margin, yPosition);
     yPosition += 10;
 
     const termsData = [
-      ['Shipping Terms', formData.shippingTerms],
-      ['Payment Terms', formData.paymentTerms],
-      ['Payment Period', formData.paymentPeriod],
-      ['Payment Period From', formData.paymentPeriodFrom],
-      ['Latest Shipment Date', formData.latestShipmentDate],
-      ['LC Expiry Date', formData.lcExpiryDate],
-      ['LC Expiry Place', formData.lcExpiryPlace]
+      ['Shipping Terms', formData.shippingTerms || 'Not specified'],
+      ['Payment Terms', formData.paymentTerms || 'Not specified'],
+      ['Payment Period', formData.paymentPeriod || 'Not specified'],
+      ['Payment Period From', formData.paymentPeriodFrom || 'Not specified'],
+      ['Latest Shipment Date', formData.latestShipmentDate || 'Not specified'],
+      ['LC Expiry Date', formData.lcExpiryDate || 'Not specified'],
+      ['LC Expiry Place', formData.lcExpiryPlace || 'Not specified']
     ];
 
     autoTable(doc, {
       startY: yPosition,
       body: termsData,
       theme: 'grid',
-      tableWidth: 'wrap',
       columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 50 },
-        1: { cellWidth: 80 }
+        0: { fontStyle: 'bold', cellWidth: usableWidth * 0.35 },
+        1: { cellWidth: usableWidth * 0.65 }
       },
-      margin: { left: 15 }
+      margin: { left: margin, right: margin },
+      styles: { fontSize: 9, cellPadding: 3 }
     });
 
     yPosition = (doc as any).lastAutoTable.finalY + 15;
-
-    // Check if we need a new page
-    if (yPosition > pageHeight - 80) {
-      doc.addPage();
-      yPosition = 30;
-    }
 
     // Bank Details
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Bank Details", 15, yPosition);
-    yPosition += 10;
+    if (formData.advisingBank) {
+      yPosition = checkPageBreak(yPosition, 40);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Advising Bank Details", margin, yPosition);
+      yPosition += 10;
 
-    const bankData = [
-      ['Advising Bank', formData.advisingBank],
-      ['City', formData.advisingCity],
-      ['PIN', formData.advisingPin],
-      ['Country', formData.advisingCountry]
-    ];
+      const bankData = [
+        ['Bank Name', formData.advisingBank || 'Not specified'],
+        ['City', formData.advisingCity || 'Not specified'],
+        ['PIN/Zip', formData.advisingPin || 'Not specified'],
+        ['Country', formData.advisingCountry || 'Not specified']
+      ];
 
-    autoTable(doc, {
-      startY: yPosition,
-      body: bankData,
-      theme: 'grid',
-      tableWidth: 'wrap',
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 40 },
-        1: { cellWidth: 80 }
-      },
-      margin: { left: 15 }
-    });
+      autoTable(doc, {
+        startY: yPosition,
+        body: bankData,
+        theme: 'grid',
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: usableWidth * 0.3 },
+          1: { cellWidth: usableWidth * 0.7 }
+        },
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9, cellPadding: 3 }
+      });
 
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
-
-    // Check if we need a new page
-    if (yPosition > pageHeight - 60) {
-      doc.addPage();
-      yPosition = 30;
+      yPosition = (doc as any).lastAutoTable.finalY + 15;
     }
 
     // Documents Required
+    yPosition = checkPageBreak(yPosition, 40);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text("Documents Required", 15, yPosition);
+    doc.text("Documents Required", margin, yPosition);
     yPosition += 10;
+
+    const selectedDocs = Object.entries(formData.documents)
+      .filter(([key, value]) => value)
+      .map(([key]) => {
+        const docNames: {[key: string]: string} = {
+          invoice: 'Commercial Invoice',
+          packingList: 'Packing List',
+          bl: 'Bill of Lading',
+          coo: 'Certificate of Origin',
+          insurance: 'Insurance Certificate',
+          phytosanitary: 'Phytosanitary Certificate',
+          other: 'Other Documents'
+        };
+        return docNames[key] || key;
+      });
+
+    if (selectedDocs.length > 0) {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      selectedDocs.forEach((docName, index) => {
+        yPosition = checkPageBreak(yPosition, 8);
+        doc.text(`• ${docName}`, margin + 5, yPosition);
+        yPosition += 6;
+      });
+    } else {
+      doc.setFontSize(10);
+      doc.text('No specific documents specified', margin + 5, yPosition);
+    }
+
+    yPosition += 10;
+
+    // Terms & Conditions
+    yPosition = checkPageBreak(yPosition, 60);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Terms & Conditions", margin, yPosition);
+    yPosition += 10;
+
+    const termsSection = [
+      { title: 'General Terms', content: formData.generalTerms },
+      { title: 'Shipping Terms', content: formData.shippingTermsText },
+      { title: 'Payment Terms', content: formData.paymentTermsText },
+      { title: 'Delivery Terms', content: formData.deliveryTerms },
+      { title: 'Dispute Resolution', content: formData.disputeTerms },
+      { title: 'Other Terms', content: formData.otherTerms }
+    ];
+
+    termsSection.forEach(section => {
+      if (section.content) {
+        yPosition = checkPageBreak(yPosition, 30);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(section.title, margin, yPosition);
+        yPosition += 8;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        const lines = doc.splitTextToSize(section.content, usableWidth);
+        lines.forEach((line: string) => {
+          yPosition = checkPageBreak(yPosition, 6);
+          doc.text(line, margin, yPosition);
+          yPosition += 5;
+        });
+        yPosition += 5;
+      }
+    });
+
+    // Signature Section
+    yPosition = checkPageBreak(yPosition, 40);
+    yPosition += 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Signatures", margin, yPosition);
+    yPosition += 15;
+
+    // Signature lines
+    const signatureY = yPosition;
+    doc.line(margin, signatureY, margin + 60, signatureY);
+    doc.line(pageWidth - margin - 60, signatureY, pageWidth - margin, signatureY);
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const documents = [];
-    if (formData.documents.invoice) documents.push('Invoice');
-    if (formData.documents.packingList) documents.push('Packing List');
-    if (formData.documents.bl) documents.push('Bill of Lading');
-    if (formData.documents.coo) documents.push('Certificate of Origin');
-    if (formData.documents.insurance) documents.push('Insurance Certificate');
-    if (formData.documents.phytosanitary) documents.push('Phytosanitary Certificate');
-    if (formData.documents.other) documents.push(formData.otherDocuments);
+    doc.text("Exporter Signature", margin + 30, signatureY + 8, { align: 'center' });
+    doc.text("Importer Signature", pageWidth - margin - 30, signatureY + 8, { align: 'center' });
 
-    documents.forEach((doc_name, index) => {
-      doc.text(`• ${doc_name}`, 20, yPosition + (index * 5));
-    });
+    // Footer
+    const footerY = pageHeight - 15;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Generated by Solviser Smart Contract Platform', pageWidth / 2, footerY, { align: 'center' });
 
-    yPosition += (documents.length * 5) + 15;
-
-    // Signature section
-    const signatureY = Math.max(yPosition, pageHeight - 40);
-    
-    if (signatureY > pageHeight - 40) {
-      doc.addPage();
-    }
-
-    const finalSignatureY = signatureY > pageHeight - 40 ? 40 : signatureY;
-    
-    doc.line(15, finalSignatureY, 80, finalSignatureY);
-    doc.text("Exporter Signature", 47.5, finalSignatureY + 5, { align: 'center' });
-    
-    doc.line(pageWidth - 80, finalSignatureY, pageWidth - 15, finalSignatureY);
-    doc.text("Importer Signature", pageWidth - 47.5, finalSignatureY + 5, { align: 'center' });
-
-    // Download the PDF
+    // Save the PDF
     doc.save(`Import_Contract_Draft_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
@@ -608,6 +677,17 @@ Cancellations and termination clauses.`,
   };
 
   const renderStepContent = () => {
+    if (dropdownsLoading || templateLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading contract data...</p>
+          </div>
+        </div>
+      );
+    }
+
     switch (currentStep) {
       case 0:
         return (
@@ -622,8 +702,10 @@ Cancellations and termination clauses.`,
                 <label className="block text-sm font-medium text-gray-700 mb-2">Contract Type *</label>
                 <select 
                   value={formData.contractType}
-                  onChange={(e) => handleInputChange('contractType', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  onChange={(e) => setFormData({...formData, contractType: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  required
+                  title="Select the type of contract"
                 >
                   <option value="Import">Import</option>
                   <option value="Export">Export</option>
@@ -640,8 +722,10 @@ Cancellations and termination clauses.`,
                   type="text" 
                   value={formData.gstin}
                   onChange={(e) => handleInputChange('gstin', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" 
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" 
                   placeholder="Enter GST Number"
+                  required
+                  title="Enter your GSTIN (Goods and Services Tax Identification Number)"
                 />
               </div>
               
@@ -651,9 +735,10 @@ Cancellations and termination clauses.`,
                   type="text" 
                   value={formData.firmName}
                   onChange={(e) => handleInputChange('firmName', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" 
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50" 
                   placeholder="Auto-fetched from GST" 
                   readOnly
+                  title="Firm name will be auto-fetched from GSTIN"
                 />
               </div>
               
@@ -663,9 +748,10 @@ Cancellations and termination clauses.`,
                   type="text" 
                   value={formData.gstState}
                   onChange={(e) => handleInputChange('gstState', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" 
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50" 
                   placeholder="Auto-fetched from GST" 
                   readOnly
+                  title="GST state will be auto-fetched from GSTIN"
                 />
               </div>
             </div>
@@ -679,7 +765,8 @@ Cancellations and termination clauses.`,
                     type="text" 
                     value={formData.supplierName}
                     onChange={(e) => handleInputChange('supplierName', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title="Enter the supplier's name"
                   />
                 </div>
                 <div>
@@ -688,7 +775,8 @@ Cancellations and termination clauses.`,
                     type="email" 
                     value={formData.supplierEmail}
                     onChange={(e) => handleInputChange('supplierEmail', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title="Enter the supplier's email address"
                   />
                 </div>
                 <div>
@@ -697,7 +785,8 @@ Cancellations and termination clauses.`,
                     type="tel" 
                     value={formData.supplierPhone}
                     onChange={(e) => handleInputChange('supplierPhone', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title="Enter the supplier's phone number"
                   />
                 </div>
               </div>
@@ -709,135 +798,129 @@ Cancellations and termination clauses.`,
         return (
           <div>
             <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">Item Details</h2>
-                  <p className="text-gray-500">Add the items to be imported with their specifications.</p>
-                </div>
-                <button 
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">Item Details</h2>
+              <p className="text-gray-500">Add items to your import contract with quantities and pricing.</p>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium text-gray-800">Items</h3>
+                <button
                   onClick={addItem}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  title="Add new item to the contract"
                 >
                   + Add Item
                 </button>
               </div>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Item Name *</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Origin *</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Sub-Category *</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Qty (CBM) *</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Rate (USD) *</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Amount (USD)</th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.items.map((item) => (
-                      <tr key={item.id} className="border-b border-gray-100">
-                        <td className="py-3 px-2">
-                          <select 
-                            value={item.itemName}
-                            onChange={(e) => handleItemChange(item.id, 'itemName', e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-red-500"
-                            title="Select item name"
-                          >
-                            <option value="">Select Item</option>
-                            {itemOptions.map(option => (
-                              <option key={option} value={option}>{option}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-3 px-2">
-                          <select 
-                            value={item.origin}
-                            onChange={(e) => handleItemChange(item.id, 'origin', e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-red-500"
-                            title="Select origin country"
-                          >
-                            <option value="">Select Origin</option>
-                            {pineOrigins.map(option => (
-                              <option key={option} value={option}>{option}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-3 px-2">
-                          <select 
-                            value={item.subCategory}
-                            onChange={(e) => handleItemChange(item.id, 'subCategory', e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-red-500"
-                            title="Select sub-category"
-                          >
-                            <option value="">Select Sub-Category</option>
-                            {sypSub.map(option => (
-                              <option key={option} value={option}>{option}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-3 px-2">
-                          <input 
-                            type="number" 
-                            value={item.qty}
-                            onChange={(e) => handleItemChange(item.id, 'qty', e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-red-500" 
-                            placeholder="0"
-                            title="Quantity in CBM"
-                          />
-                        </td>
-                        <td className="py-3 px-2">
-                          <input 
-                            type="number" 
-                            value={item.rate}
-                            onChange={(e) => handleItemChange(item.id, 'rate', e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-red-500" 
-                            placeholder="0.00" 
-                            step="0.01"
-                            title="Rate in USD"
-                          />
-                        </td>
-                        <td className="py-3 px-2">
-                          <input 
-                            type="text" 
-                            value={item.amount.toFixed(2)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm bg-gray-50" 
-                            readOnly
-                            title="Calculated amount"
-                          />
-                        </td>
-                        <td className="py-3 px-2">
-                          <button 
-                            onClick={() => removeItem(item.id)}
-                            className="text-red-600 hover:text-white hover:bg-red-600 p-1 rounded transition-colors"
-                            disabled={formData.items.length <= 1}
-                            title="Remove item"
-                          >
-                            🗑️
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+              <div className="space-y-4">
+                {formData.items.map((item, index) => (
+                  <div key={item.id} className="grid grid-cols-1 md:grid-cols-7 gap-4 p-4 border border-gray-200 rounded-lg">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
+                      <select
+                        value={item.itemName}
+                        onChange={(e) => updateItem(item.id, 'itemName', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500"
+                        title="Select the type of item"
+                      >
+                        <option value="">Select Item</option>
+                        {dropdowns.item_types?.map(option => (
+                          <option key={option.id} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Origin *</label>
+                      <select
+                        value={item.origin}
+                        onChange={(e) => updateItem(item.id, 'origin', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500"
+                        title="Select country of origin"
+                      >
+                        <option value="">Select Origin</option>
+                        {dropdowns.origins?.map(option => (
+                          <option key={option.id} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sub-Category *</label>
+                      <select
+                        value={item.subCategory}
+                        onChange={(e) => updateItem(item.id, 'subCategory', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500"
+                        title="Select item sub-category"
+                      >
+                        <option value="">Select Category</option>
+                        {dropdowns.sub_categories?.map(option => (
+                          <option key={option.id} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Qty (CBM) *</label>
+                      <input
+                        type="number"
+                        value={item.qty}
+                        onChange={(e) => updateItem(item.id, 'qty', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500"
+                        placeholder="0"
+                        min="0"
+                        step="0.01"
+                        title="Enter quantity in cubic meters"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rate (USD) *</label>
+                      <input
+                        type="number"
+                        value={item.rate}
+                        onChange={(e) => updateItem(item.id, 'rate', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500"
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                        title="Enter rate per unit in USD"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
+                      <input
+                        type="text"
+                        value={item.amount.toFixed(2)}
+                        readOnly
+                        className="w-full p-2 border border-gray-300 rounded bg-gray-50"
+                        title="Calculated amount (Qty × Rate)"
+                      />
+                    </div>
+
+                    <div className="flex items-end">
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
+                        title="Remove this item"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              
-              <div className="mt-4 flex justify-end">
+
+              <div className="mt-6 text-right">
                 <div className="text-lg font-semibold text-gray-800">
-                  Total Amount (USD): <span className="text-red-600">${formData.totalAmount.toFixed(2)}</span>
+                  Total Amount: ${formData.totalAmount.toFixed(2)}
                 </div>
-              </div>
-              
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amount in Words</label>
-                <input 
-                  type="text" 
-                  value={formData.amountInWords}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-gray-50" 
-                  placeholder="Auto-generated" 
-                  readOnly
-                />
+                <div className="text-sm text-gray-600 mt-1">
+                  {formData.amountInWords}
+                </div>
               </div>
             </div>
           </div>
@@ -848,53 +931,52 @@ Cancellations and termination clauses.`,
           <div>
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">Shipping & Payment Terms</h2>
-              <p className="text-gray-500">Configure the shipping and payment terms for the contract.</p>
+              <p className="text-gray-500">Define shipping terms, payment methods, and important dates.</p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Terms (Incoterms) *</label>
-                <select 
+                <select
                   value={formData.shippingTerms}
-                  onChange={(e) => handleInputChange('shippingTerms', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  title="Select shipping terms"
+                  onChange={(e) => setFormData({...formData, shippingTerms: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  title="Select international commercial terms"
                 >
-                  <option value="CIF">CIF</option>
-                  <option value="CFR">CFR</option>
-                  <option value="CNF">CNF</option>
-                  <option value="FOB">FOB</option>
-                  <option value="EXW">EXW</option>
+                  <option value="">Select Incoterm</option>
+                  {dropdowns.incoterms?.map(option => (
+                    <option key={option.id} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Payment Terms *</label>
-                <select 
+                <select
                   value={formData.paymentTerms}
-                  onChange={(e) => handleInputChange('paymentTerms', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  title="Select payment terms"
+                  onChange={(e) => setFormData({...formData, paymentTerms: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  title="Select payment method"
                 >
-                  <option value="Letter of Credit (L/C)">Letter of Credit (L/C)</option>
-                  <option value="Document against Payment (D/P)">Document against Payment (D/P)</option>
-                  <option value="Document against Acceptance (D/A)">Document against Acceptance (D/A)</option>
-                  <option value="Wire Transfer">Wire Transfer</option>
+                  <option value="">Select Payment Terms</option>
+                  {dropdowns.payment_terms?.map(option => (
+                    <option key={option.id} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Payment Period</label>
-                <select 
+                <select
                   value={formData.paymentPeriod}
-                  onChange={(e) => handleInputChange('paymentPeriod', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  onChange={(e) => setFormData({...formData, paymentPeriod: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   title="Select payment period"
                 >
-                  <option value="90 Days">90 Days</option>
-                  <option value="120 Days">120 Days</option>
-                  <option value="150 Days">150 Days</option>
-                  <option value="180 Days">180 Days</option>
+                  <option value="">Select Period</option>
+                  {dropdowns.payment_periods?.map(option => (
+                    <option key={option.id} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -903,7 +985,7 @@ Cancellations and termination clauses.`,
                 <select 
                   value={formData.paymentPeriodFrom}
                   onChange={(e) => handlePaymentPeriodFromChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   title="Select payment period reference date"
                 >
                   <option value="">Select Reference Date</option>
@@ -926,7 +1008,8 @@ Cancellations and termination clauses.`,
                     type="date" 
                     value={formData.invoiceDate}
                     onChange={(e) => handleInputChange('invoiceDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    required
                   />
                 </div>
                 
@@ -936,7 +1019,7 @@ Cancellations and termination clauses.`,
                     type="date" 
                     value={formData.negotiationDate}
                     onChange={(e) => handleInputChange('negotiationDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 
@@ -946,7 +1029,8 @@ Cancellations and termination clauses.`,
                     type="date" 
                     value={formData.latestShipmentDate}
                     onChange={(e) => handleInputChange('latestShipmentDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    required
                   />
                 </div>
                 
@@ -956,7 +1040,7 @@ Cancellations and termination clauses.`,
                     type="date" 
                     value={formData.acceptanceDate}
                     onChange={(e) => handleInputChange('acceptanceDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 
@@ -966,7 +1050,7 @@ Cancellations and termination clauses.`,
                     type="date" 
                     value={formData.blDate}
                     onChange={(e) => handleInputChange('blDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 
@@ -976,7 +1060,7 @@ Cancellations and termination clauses.`,
                     type="date" 
                     value={formData.lcExpiryDate}
                     onChange={(e) => handleInputChange('lcExpiryDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
               </div>
@@ -987,7 +1071,7 @@ Cancellations and termination clauses.`,
                   type="text" 
                   value={formData.lcExpiryPlace}
                   onChange={(e) => handleInputChange('lcExpiryPlace', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" 
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" 
                   placeholder="Enter expiry place"
                 />
               </div>
@@ -1000,9 +1084,9 @@ Cancellations and termination clauses.`,
           <div>
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">Documents & Bank Details</h2>
-              <p className="text-gray-500">Specify required documents and banking information.</p>
+              <p className="text-gray-500">Specify required documents and bank information.</p>
             </div>
-            
+
             <div className="mb-8">
               <label className="block text-sm font-medium text-gray-700 mb-3">Documents of Presentation</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -1075,7 +1159,7 @@ Cancellations and termination clauses.`,
                   type="text" 
                   value={formData.otherDocuments}
                   onChange={(e) => handleInputChange('otherDocuments', e.target.value)}
-                  className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" 
+                  className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" 
                   placeholder="Specify other documents"
                 />
               </div>
@@ -1090,7 +1174,7 @@ Cancellations and termination clauses.`,
                     type="text" 
                     value={formData.advisingBank}
                     onChange={(e) => handleInputChange('advisingBank', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 
@@ -1100,7 +1184,7 @@ Cancellations and termination clauses.`,
                     type="text" 
                     value={formData.advisingCity}
                     onChange={(e) => handleInputChange('advisingCity', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 
@@ -1110,7 +1194,7 @@ Cancellations and termination clauses.`,
                     type="text" 
                     value={formData.advisingPin}
                     onChange={(e) => handleInputChange('advisingPin', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 
@@ -1119,7 +1203,7 @@ Cancellations and termination clauses.`,
                   <select 
                     value={formData.advisingCountry}
                     onChange={(e) => handleInputChange('advisingCountry', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     title="Select advising bank country"
                   >
                     <option value="">Select Country</option>
@@ -1139,172 +1223,70 @@ Cancellations and termination clauses.`,
           <div>
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">Terms & Conditions</h2>
-              <p className="text-gray-500">Review and accept all contract terms and conditions.</p>
+              <p className="text-gray-500">Review and accept the contract terms and conditions.</p>
             </div>
-            
-            <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
+
+            <div className="space-y-6">
+              {/* Display all terms in a single scrollable area */}
+              <div className="bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
                 {[
-                  { id: 'general', label: 'General Terms' },
-                  { id: 'shipping', label: 'Shipping Terms' },
-                  { id: 'payment', label: 'Payment Terms' },
-                  { id: 'delivery', label: 'Delivery Terms' },
-                  { id: 'dispute', label: 'Dispute Resolution' },
-                  { id: 'others', label: 'Other Terms' }
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`py-2 px-1 border-b-2 text-sm ${
-                      activeTab === tab.id
-                        ? 'border-red-500 text-red-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
+                  {
+                    title: 'General Terms',
+                    content: formData.generalTerms
+                  },
+                  {
+                    title: 'Shipping Terms',
+                    content: formData.shippingTermsText
+                  }, 
+                  {
+                    title: 'Payment Terms',
+                    content: formData.paymentTermsText
+                  },
+                  {
+                    title: 'Delivery Terms',
+                    content: formData.deliveryTerms
+                  },
+                  {
+                    title: 'Dispute Resolution',
+                    content: formData.disputeTerms
+                  },
+                  {
+                    title: 'Other Terms',
+                    content: formData.otherTerms
+                  }
+                ].map((section, index) => (
+                  section.content && (
+                    <div key={index} className="mb-6 last:mb-0">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3">{section.title}</h3>
+                      <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                        {section.content}
+                      </div>
+                    </div>
+                  )
                 ))}
-              </nav>
-            </div>
-            
-            <div className="mt-6">
-              {activeTab === 'general' && (
-                <div>
-                  <div className="min-h-[200px] p-4 border border-gray-300 rounded-md">
-                    <textarea 
-                      value={formData.generalTerms}
-                      onChange={(e) => handleInputChange('generalTerms', e.target.value)}
-                      className="w-full h-48 resize-none border-none outline-none"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.termsAccepted.general}
-                        onChange={(e) => handleTermsAcceptance('general', e.target.checked)}
-                        className="mr-2 text-red-600 focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">I accept these terms</span>
-                    </label>
-                  </div>
+              </div>
+
+              {/* Single acceptance checkbox */}
+              <div className="bg-white p-6 rounded-lg border border-gray-200">
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="acceptAllTerms"
+                    checked={formData.termsAccepted.allTerms}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      termsAccepted: { allTerms: e.target.checked }
+                    })}
+                    className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="acceptAllTerms" className="text-sm text-gray-700">
+                    <span className="font-medium">I accept all terms and conditions</span>
+                    <p className="text-gray-500 mt-1">
+                      By checking this box, I acknowledge that I have read, understood, and agree to be bound by all the terms and conditions outlined above, including general terms, shipping terms, payment terms, delivery terms, dispute resolution procedures, and any other specified terms.
+                    </p>
+                  </label>
                 </div>
-              )}
-              
-              {activeTab === 'shipping' && (
-                <div>
-                  <div className="min-h-[200px] p-4 border border-gray-300 rounded-md">
-                    <textarea 
-                      value={formData.shippingTermsText}
-                      onChange={(e) => handleInputChange('shippingTermsText', e.target.value)}
-                      className="w-full h-48 resize-none border-none outline-none"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.termsAccepted.shipping}
-                        onChange={(e) => handleTermsAcceptance('shipping', e.target.checked)}
-                        className="mr-2 text-red-600 focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">I accept these terms</span>
-                    </label>
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'payment' && (
-                <div>
-                  <div className="min-h-[200px] p-4 border border-gray-300 rounded-md">
-                    <textarea 
-                      value={formData.paymentTermsText}
-                      onChange={(e) => handleInputChange('paymentTermsText', e.target.value)}
-                      className="w-full h-48 resize-none border-none outline-none"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.termsAccepted.payment}
-                        onChange={(e) => handleTermsAcceptance('payment', e.target.checked)}
-                        className="mr-2 text-red-600 focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">I accept these terms</span>
-                    </label>
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'delivery' && (
-                <div>
-                  <div className="min-h-[200px] p-4 border border-gray-300 rounded-md">
-                    <textarea 
-                      value={formData.deliveryTerms}
-                      onChange={(e) => handleInputChange('deliveryTerms', e.target.value)}
-                      className="w-full h-48 resize-none border-none outline-none"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.termsAccepted.delivery}
-                        onChange={(e) => handleTermsAcceptance('delivery', e.target.checked)}
-                        className="mr-2 text-red-600 focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">I accept these terms</span>
-                    </label>
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'dispute' && (
-                <div>
-                  <div className="min-h-[200px] p-4 border border-gray-300 rounded-md">
-                    <textarea 
-                      value={formData.disputeTerms}
-                      onChange={(e) => handleInputChange('disputeTerms', e.target.value)}
-                      className="w-full h-48 resize-none border-none outline-none"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.termsAccepted.dispute}
-                        onChange={(e) => handleTermsAcceptance('dispute', e.target.checked)}
-                        className="mr-2 text-red-600 focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">I accept these terms</span>
-                    </label>
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'others' && (
-                <div>
-                  <div className="min-h-[200px] p-4 border border-gray-300 rounded-md">
-                    <textarea 
-                      value={formData.otherTerms}
-                      onChange={(e) => handleInputChange('otherTerms', e.target.value)}
-                      className="w-full h-48 resize-none border-none outline-none"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.termsAccepted.others}
-                        onChange={(e) => handleTermsAcceptance('others', e.target.checked)}
-                        className="mr-2 text-red-600 focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">I accept these terms</span>
-                    </label>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         );
@@ -1316,125 +1298,89 @@ Cancellations and termination clauses.`,
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
-      {/* Page Header */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           <button 
             onClick={onGoBack} 
             className="px-4 py-2.5 mr-4 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+            title="Go back to Smart Contract dashboard"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
+            ← Back
           </button>
+          
           <div>
-            <h1 className="text-3xl font-semibold text-gray-800">Import Smart Contract</h1>
-            <div className="text-sm text-gray-500 mt-1">Contract ID: IMP-2025-0001</div>
+            <h1 className="text-2xl font-bold text-gray-800">Import Smart Contract</h1>
+            <p className="text-gray-500">Contract ID: IMP-2025-0001</p>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <button 
+        
+        <div className="flex space-x-3">
+          <button
             onClick={handleGeneratePdf}
-            className="px-4 py-2 bg-red-600 text-white border border-red-600 rounded-md hover:bg-white hover:text-red-600 transition-colors"
-            title="Save contract draft as PDF"
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-2"
+            title="Download contract as PDF"
           >
-            💾 Save Draft
+            <span>💾</span>
+            <span>Save Draft</span>
           </button>
-          <button 
-            className="px-4 py-2 bg-red-600 text-white border border-red-600 rounded-md hover:bg-white hover:text-red-600 transition-colors"
-            title="Preview contract"
+          <button
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2"
+            title="Preview contract before finalizing"
           >
-            👁️ Preview
+            <span>👁️</span>
+            <span>Preview</span>
           </button>
-          <button 
-            className="px-4 py-2 bg-red-600 text-white border border-red-600 rounded-md hover:bg-white hover:text-red-600 transition-colors"
+          <button
+            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
             title="Send contract to buyer"
           >
-            📧 Send to Buyer
+            <span>📤</span>
+            <span>Send to Buyer</span>
           </button>
         </div>
       </div>
 
-      {/* Main Content Card */}
-      <div className="p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-        <Stepper currentStep={currentStep} totalSteps={5} />
-        
-        {/* Render the current step's content */}
-        {renderStepContent()}
-
-        {/* Navigation buttons */}
-        <div className="mt-8 flex justify-between">
-          {currentStep > 0 && (
-            <button
-              onClick={handlePrevious}
-              className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
-            >
-              Previous
-            </button>
-          )}
-          {currentStep < 4 ? (
-            <button
-              onClick={handleNext}
-              className="px-6 py-2.5 rounded-full text-white transition-colors ml-auto bg-red-600 hover:bg-red-700"
-            >
-              Next
-            </button>
-          ) : (
-            <button 
-              onClick={handleSubmit}
-              disabled={!Object.values(formData.termsAccepted).every(accepted => accepted)}
-              className="px-6 py-2.5 rounded-full text-white bg-green-600 hover:bg-green-700 transition-colors ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Create Import Contract
-            </button>
-          )}
-        </div>
+      {/* Stepper */}
+      <div className="mb-8">
+        <Stepper 
+          currentStep={currentStep} 
+          totalSteps={5}
+        />
       </div>
 
-      {/* Payment Period Modal */}
-      {showPaymentPeriodModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md mx-4 p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-800">Payment Period From - Others</h3>
-              <button 
-                onClick={() => setShowPaymentPeriodModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Specify Payment Period Reference</label>
-                <textarea 
-                  value={customPaymentPeriod}
-                  onChange={(e) => setCustomPaymentPeriod(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 h-24" 
-                  placeholder="Enter custom payment period reference date..."
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
-              <button 
-                onClick={() => setShowPaymentPeriodModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={saveCustomPaymentPeriod}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Content */}
+      <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+        {renderStepContent()}
+      </div>
+
+      {/* Navigation */}
+      <div className="flex justify-between">
+        <button
+          onClick={handlePrevious}
+          disabled={currentStep === 0}
+          className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          Previous
+        </button>
+        
+        {currentStep < 4 ? (
+          <button
+            onClick={handleNext}
+            className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+          >
+            Next
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={!formData.termsAccepted.allTerms}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          >
+            Create Contract
+          </button>
+        )}
+      </div>
     </div>
   );
 }

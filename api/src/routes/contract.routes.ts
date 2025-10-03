@@ -12,7 +12,9 @@ import {
   archiveContract,
   getContractsByRisk,
   getFinancialSummary,
-  markContractSigned
+  markContractSigned,
+  getDropdownOptions,
+  getContractTemplates
 } from '../controllers/contract.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { can } from '../middleware/permission.middleware';
@@ -65,6 +67,22 @@ router.get(
   authenticateToken, 
   can('contract.view.all'), 
   getContractsByRisk
+);
+
+// Get contract dropdown options by category
+router.get(
+  '/dropdown-options/:category', 
+  authenticateToken, 
+  can('contract.view.all'), 
+  getDropdownOptions
+);
+
+// Get contract templates by type
+router.get(
+  '/templates/:type', 
+  authenticateToken, 
+  can('contract.view.all'), 
+  getContractTemplates
 );
 
 // Create a new contract

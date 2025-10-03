@@ -7,7 +7,6 @@ import ContractFilters from "./ContractFilters";
 import QuickActions from "./QuickActions";
 import ContractInsights from "./ContractInsights";
 import UpcomingMilestones from "./UpcomingMilestones";
-import AdditionalOptions from "./AdditionalOptions";
 import StatCard from "./StatCard";
 import { DocumentIcon, CheckIcon, AlertCircleIcon, HandshakeIcon, ClockIcon } from "./icons";
 import api from '@/lib/api';
@@ -283,7 +282,6 @@ export default function SmartContractPage() {
                   <div className="sidebar-column">
                     <ContractInsights />
                     <UpcomingMilestones />
-                    <AdditionalOptions />
                   </div>
                 </div>
               </section>

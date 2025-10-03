@@ -16,7 +16,8 @@
     "next": "^15.5.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-hook-form": "^7.62.0"
+    "react-hook-form": "^7.62.0",
+    "recharts": "^3.2.1"
   },
   "devDependencies": {
     "@babel/core": "7.26.0",

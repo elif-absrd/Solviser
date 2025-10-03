@@ -274,3 +274,54 @@ model Contract {
 
   @@map("contracts")
 }
+
+model ContractDropdownCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g., "item_types", "origins", "incoterms", "payment_terms"
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  options ContractDropdownOption[]
+  
+  @@map("contract_dropdown_categories")
+}
+
+model ContractDropdownOption {
+  id          Int      @id @default(autoincrement())
+  categoryId  Int
+  value       String   // The actual value
+  label       String   // Display label
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  parentId    Int?     // For hierarchical options (e.g., sub-categories)
+  metadata    Json?    // Additional data like country codes, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  category    ContractDropdownCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  parent      ContractDropdownOption? @relation("ParentChild", fields: [parentId], references: [id])
+  children    ContractDropdownOption[] @relation("ParentChild")
+  
+  @@map("contract_dropdown_options")
+}
+
+model ContractTemplate {
+  id               Int      @id @default(autoincrement())
+  name             String
+  type             String   // "import", "export", "domestic", etc.
+  generalTerms     String?  @db.Text
+  shippingTerms    String?  @db.Text
+  paymentTerms     String?  @db.Text
+  deliveryTerms    String?  @db.Text
+  disputeTerms     String?  @db.Text
+  otherTerms       String?  @db.Text
+  isDefault        Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@map("contract_templates")
+}

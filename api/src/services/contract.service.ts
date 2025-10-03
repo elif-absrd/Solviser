@@ -546,3 +546,63 @@ function assessRiskFactors(contractData: ContractCreateInput | ContractUpdateInp
   
   return riskFactors;
 }
+
+// Get dropdown options by category
+export const getDropdownOptions = async (category: string) => {
+  try {
+    const categoryRecord = await prisma.contractDropdownCategory.findUnique({
+      where: { name: category },
+      include: {
+        options: {
+          where: { isActive: true },
+          orderBy: { sortOrder: 'asc' }
+        }
+      }
+    });
+
+    if (!categoryRecord) {
+      throw new Error('Category not found');
+    }
+
+    return {
+      category: categoryRecord.name,
+      options: categoryRecord.options.map(option => ({
+        id: option.id,
+        value: option.value,
+        label: option.label,
+        description: option.description,
+        metadata: option.metadata
+      }))
+    };
+  } catch (error) {
+    throw new Error(`Failed to get dropdown options: ${error}`);
+  }
+};
+
+// Get contract templates by type
+export const getContractTemplates = async (type: string) => {
+  try {
+    const templates = await prisma.contractTemplate.findMany({
+      where: { 
+        type,
+        isActive: true 
+      },
+      orderBy: { name: 'asc' }
+    });
+
+    return templates.map(template => ({
+      id: template.id,
+      name: template.name,
+      type: template.type,
+      generalTerms: template.generalTerms,
+      shippingTerms: template.shippingTerms,
+      paymentTerms: template.paymentTerms,
+      deliveryTerms: template.deliveryTerms,
+      disputeTerms: template.disputeTerms,
+      otherTerms: template.otherTerms,
+      isDefault: template.isDefault
+    }));
+  } catch (error) {
+    throw new Error(`Failed to get contract templates: ${error}`);
+  }
+};
