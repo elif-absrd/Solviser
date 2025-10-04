@@ -85,10 +85,6 @@ interface ImportFormData {
   };
 }
 
-const itemOptions = ["Pine Wood", "Hardwood", "Teak Wood"];
-const pineOrigins = ["Uruguay", "New Zealand", "Australia", "Southern Yellow Pine (SYP)"];
-const sypSub = ["Lumbers", "Logs Unedged"];
-
 export default function ImportContractPage({ onGoBack }: ImportContractPageProps) {
   const { dropdowns, loading: dropdownsLoading } = useContractDropdowns();
   const { template, loading: templateLoading } = useContractTemplate('import');
@@ -387,24 +383,29 @@ Cancellations and termination clauses.`,
 
     // Header with logo and title
     let yPosition = 20;
-    try {
-      doc.addImage('/blacklogo.png', 'PNG', margin, yPosition, 40, 10);
-    } catch (e) {
-      console.warn("Logo not found, using text header");
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('SOLVISER', margin, yPosition + 6);
-    }
 
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text('IMPORT SMART CONTRACT', pageWidth / 2, yPosition + 5, { align: 'center' });
-    
-    yPosition += 15;
+
+      try {
+          doc.addImage('/blacklogo.png', 'PNG', 15, 15, 40, 10);
+        } catch (e) {
+          console.error("Could not add logo. Make sure it's in your /public folder.", e);
+          doc.setFontSize(20);
+          doc.text("Solviser", 15, 25);
+        }
+
+    doc.setFontSize(18);
+    doc.text("IMPORT SMART CONTRACT", pageWidth - 15, 25, { align: 'right' });
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Contract ID: ${formData.contractId || 'IMP-2025-0001'}`, pageWidth / 2, yPosition, { align: 'center' });
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition + 5, { align: 'center' });
+    doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, pageWidth - 15, 32, { align: 'right' });
+    doc.text(`Reference #: ${Date.now()}`, pageWidth - 15, 37, { align: 'right' });
+    
+    doc.line(15, 45, pageWidth - 15, 45);
+
+    yPosition += 15;
+    // doc.setFontSize(10);
+    // doc.setFont('helvetica', 'normal');
+    // doc.text(`Contract ID: ${formData.contractId || 'IMP-2025-0001'}`, pageWidth / 2, yPosition, { align: 'right' });
+    // doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition + 5, { align: 'right' });
     
     yPosition += 20;
 
@@ -1009,6 +1010,7 @@ Cancellations and termination clauses.`,
                     value={formData.invoiceDate}
                     onChange={(e) => handleInputChange('invoiceDate', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Select the invoice date'
                     required
                   />
                 </div>
@@ -1020,6 +1022,7 @@ Cancellations and termination clauses.`,
                     value={formData.negotiationDate}
                     onChange={(e) => handleInputChange('negotiationDate', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Select the negotiation date'
                   />
                 </div>
                 
@@ -1030,6 +1033,7 @@ Cancellations and termination clauses.`,
                     value={formData.latestShipmentDate}
                     onChange={(e) => handleInputChange('latestShipmentDate', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Select the latest shipment date'
                     required
                   />
                 </div>
@@ -1041,6 +1045,7 @@ Cancellations and termination clauses.`,
                     value={formData.acceptanceDate}
                     onChange={(e) => handleInputChange('acceptanceDate', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Select the acceptance date'
                   />
                 </div>
                 
@@ -1051,6 +1056,7 @@ Cancellations and termination clauses.`,
                     value={formData.blDate}
                     onChange={(e) => handleInputChange('blDate', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Select the Bill of Lading date'
                   />
                 </div>
                 
@@ -1061,6 +1067,7 @@ Cancellations and termination clauses.`,
                     value={formData.lcExpiryDate}
                     onChange={(e) => handleInputChange('lcExpiryDate', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Select the LC expiry date'
                   />
                 </div>
               </div>
@@ -1161,6 +1168,8 @@ Cancellations and termination clauses.`,
                   onChange={(e) => handleInputChange('otherDocuments', e.target.value)}
                   className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" 
                   placeholder="Specify other documents"
+                  title="Enter any additional documents required for the contract"
+                  aria-label="Specify other documents required for the contract"
                 />
               </div>
             </div>
@@ -1175,6 +1184,7 @@ Cancellations and termination clauses.`,
                     value={formData.advisingBank}
                     onChange={(e) => handleInputChange('advisingBank', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title="Enter the name of the advising bank"
                   />
                 </div>
                 
@@ -1185,6 +1195,7 @@ Cancellations and termination clauses.`,
                     value={formData.advisingCity}
                     onChange={(e) => handleInputChange('advisingCity', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Enter the city where the advising bank is located'
                   />
                 </div>
                 
@@ -1195,6 +1206,7 @@ Cancellations and termination clauses.`,
                     value={formData.advisingPin}
                     onChange={(e) => handleInputChange('advisingPin', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title='Enter the PIN or Zip code of the advising bank'
                   />
                 </div>
                 
@@ -1223,67 +1235,108 @@ Cancellations and termination clauses.`,
           <div>
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">Terms & Conditions</h2>
-              <p className="text-gray-500">Review and accept the contract terms and conditions.</p>
+              <p className="text-gray-500">Review and customize the contract terms and conditions.</p>
             </div>
 
             <div className="space-y-6">
-              {/* Display all terms in a single scrollable area */}
-              <div className="bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
-                {[
-                  {
-                    title: 'General Terms',
-                    content: formData.generalTerms
-                  },
-                  {
-                    title: 'Shipping Terms',
-                    content: formData.shippingTermsText
-                  }, 
-                  {
-                    title: 'Payment Terms',
-                    content: formData.paymentTermsText
-                  },
-                  {
-                    title: 'Delivery Terms',
-                    content: formData.deliveryTerms
-                  },
-                  {
-                    title: 'Dispute Resolution',
-                    content: formData.disputeTerms
-                  },
-                  {
-                    title: 'Other Terms',
-                    content: formData.otherTerms
-                  }
-                ].map((section, index) => (
-                  section.content && (
-                    <div key={index} className="mb-6 last:mb-0">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-3">{section.title}</h3>
-                      <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                        {section.content}
-                      </div>
-                    </div>
-                  )
-                ))}
+              {/* General Terms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  General Terms
+                </label>
+                <textarea
+                  value={formData.generalTerms}
+                  onChange={(e) => handleInputChange('generalTerms', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  rows={4}
+                  placeholder="Enter general terms and conditions"
+                />
               </div>
 
-              {/* Single acceptance checkbox */}
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
+              {/* Shipping Terms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Shipping Terms
+                </label>
+                <textarea
+                  value={formData.shippingTermsText}
+                  onChange={(e) => handleInputChange('shippingTermsText', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  rows={4}
+                  placeholder="Enter shipping terms and conditions"
+                />
+              </div>
+
+              {/* Payment Terms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Payment Terms
+                </label>
+                <textarea
+                  value={formData.paymentTermsText}
+                  onChange={(e) => handleInputChange('paymentTermsText', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  rows={4}
+                  placeholder="Enter payment terms and conditions"
+                />
+              </div>
+
+              {/* Delivery Terms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Delivery Terms
+                </label>
+                <textarea
+                  value={formData.deliveryTerms}
+                  onChange={(e) => handleInputChange('deliveryTerms', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  rows={4}
+                  placeholder="Enter delivery terms and conditions"
+                />
+              </div>
+
+              {/* Dispute Terms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dispute Resolution Terms
+                </label>
+                <textarea
+                  value={formData.disputeTerms}
+                  onChange={(e) => handleInputChange('disputeTerms', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  rows={4}
+                  placeholder="Enter dispute resolution terms"
+                />
+              </div>
+
+              {/* Other Terms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Other Terms
+                </label>
+                <textarea
+                  value={formData.otherTerms}
+                  onChange={(e) => handleInputChange('otherTerms', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  rows={4}
+                  placeholder="Enter any additional terms and conditions"
+                />
+              </div>
+
+              {/* Terms Acceptance */}
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Agreement</h3>
                 <div className="flex items-start space-x-3">
                   <input
                     type="checkbox"
                     id="acceptAllTerms"
                     checked={formData.termsAccepted.allTerms}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      termsAccepted: { allTerms: e.target.checked }
-                    })}
+                    onChange={(e) => handleTermsAcceptance('allTerms', e.target.checked)}
                     className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                   />
                   <label htmlFor="acceptAllTerms" className="text-sm text-gray-700">
-                    <span className="font-medium">I accept all terms and conditions</span>
-                    <p className="text-gray-500 mt-1">
-                      By checking this box, I acknowledge that I have read, understood, and agree to be bound by all the terms and conditions outlined above, including general terms, shipping terms, payment terms, delivery terms, dispute resolution procedures, and any other specified terms.
-                    </p>
+                    I acknowledge that I have read, understood, and agree to all the terms and conditions stated above. 
+                    I confirm that all information provided is accurate and complete.
                   </label>
                 </div>
               </div>
@@ -1308,7 +1361,6 @@ Cancellations and termination clauses.`,
           >
             ← Back
           </button>
-          
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Import Smart Contract</h1>
             <p className="text-gray-500">Contract ID: IMP-2025-0001</p>

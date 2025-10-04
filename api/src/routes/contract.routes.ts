@@ -69,19 +69,15 @@ router.get(
   getContractsByRisk
 );
 
-// Get contract dropdown options by category
+// Get contract dropdown options by category (public endpoint)
 router.get(
   '/dropdown-options/:category', 
-  authenticateToken, 
-  can('contract.view.all'), 
   getDropdownOptions
 );
 
-// Get contract templates by type
+// Get contract templates by type (public endpoint)
 router.get(
   '/templates/:type', 
-  authenticateToken, 
-  can('contract.view.all'), 
   getContractTemplates
 );
 

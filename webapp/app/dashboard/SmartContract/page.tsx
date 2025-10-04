@@ -8,6 +8,9 @@ import QuickActions from "./QuickActions";
 import ContractInsights from "./ContractInsights";
 import UpcomingMilestones from "./UpcomingMilestones";
 import StatCard from "./StatCard";
+import TemplateLibrary from "./TemplateLibrary";
+import ContractBuilder from "./ContractBuilder";
+import ContractStatusTracker from "./ContractStatusTracker";
 import { DocumentIcon, CheckIcon, AlertCircleIcon, HandshakeIcon, ClockIcon } from "./icons";
 import api from '@/lib/api';
 import { RotateCcw } from "lucide-react";
@@ -28,7 +31,8 @@ interface ContractFilters {
   sortBy: string;
 }
 
-type ViewType = "dashboard" | "newContract" | "importContract";
+type ViewType = "dashboard" | "newContract" | "importContract" | "templateLibrary" | "contractBuilder" | "statusTracker";
+
 
 export default function SmartContractPage() {
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
@@ -36,12 +40,15 @@ export default function SmartContractPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [selectedContractId, setSelectedContractId] = useState<string>("");
   const [filters, setFilters] = useState<ContractFilters>({
     buyer: '',
     industry: '',
     status: '',
     sortBy: 'riskScore'
   });
+
 
   const fetchStats = async (isManualRefresh = false) => {
     try {
@@ -97,6 +104,16 @@ export default function SmartContractPage() {
     });
   };
 
+  const handleTemplateLibrary = () => setCurrentView("templateLibrary");
+  const handleContractBuilder = (template?: any) => {
+    setSelectedTemplate(template);
+    setCurrentView("contractBuilder");
+  };
+  const handleStatusTracker = (contractId: string) => {
+    setSelectedContractId(contractId);
+    setCurrentView("statusTracker");
+  };
+
   if (currentView === "newContract") {
     return <AddNewContractPage onGoBack={() => {
       setCurrentView("dashboard");
@@ -111,6 +128,32 @@ export default function SmartContractPage() {
       // Refresh stats when returning from import contract page
       fetchStats(true);
     }} />;
+  }
+
+  if (currentView === "templateLibrary") {
+    return <TemplateLibrary 
+      onSelectTemplate={(template) => handleContractBuilder(template)}
+      onGoBack={() => setCurrentView("dashboard")}
+    />;
+  }
+
+  if (currentView === "contractBuilder") {
+    return <ContractBuilder 
+      template={selectedTemplate}
+      onSave={(contract) => {
+        console.log('Contract saved:', contract);
+        setCurrentView("dashboard");
+        fetchStats(true);
+      }}
+      onGoBack={() => setCurrentView("dashboard")}
+    />;
+  }
+
+  if (currentView === "statusTracker") {
+    return <ContractStatusTracker 
+      contractId={selectedContractId}
+      onGoBack={() => setCurrentView("dashboard")}
+    />;
   }
 
   if (isLoading) {
@@ -146,6 +189,20 @@ export default function SmartContractPage() {
                     <RotateCcw className={`refresh-icon ${isRefreshing ? 'spinning' : ''}`} />
                   </button>
                   <div className="contract-type-buttons">
+                    <button 
+                      className="primary-button"
+                      onClick={() => setCurrentView("templateLibrary")}
+                    >
+                      <div className="button-icon">📚</div>
+                      <span className="button-text">Template Library</span>
+                    </button>
+                    <button 
+                      className="secondary-button"
+                      onClick={() => handleContractBuilder()}
+                    >
+                      <div className="button-icon">🏗️</div>
+                      <span className="button-text">Contract Builder</span>
+                    </button>
                     <button 
                       className="primary-button"
                       onClick={() => setCurrentView("newContract")}
@@ -258,6 +315,8 @@ export default function SmartContractPage() {
                 <QuickActions 
                   onNewContract={() => setCurrentView("newContract")} 
                   onImportContract={() => setCurrentView("importContract")}
+                  onTemplateLibrary={() => setCurrentView("templateLibrary")}
+                  onContractBuilder={() => handleContractBuilder()}
                 />
               </section>
 
@@ -274,7 +333,10 @@ export default function SmartContractPage() {
                           onClearFilters={clearFilters} 
                         />
                       </div>
-                      <ContractList filters={filters} />
+                      <ContractList 
+                        filters={filters} 
+                        onStatusTracker={(contractId) => handleStatusTracker(contractId)}
+                      />
                     </div>
                   </div>
 
@@ -311,7 +373,7 @@ export default function SmartContractPage() {
         }
 
         @media (max-width: 991px) {
-          .dashboard-body {
+          .dashboard_body {
             max-width: 100%;
           }
         }
@@ -547,6 +609,7 @@ export default function SmartContractPage() {
         .contract-type-buttons {
           display: flex;
           gap: 8px;
+          flex-wrap: wrap;
         }
 
         .refresh-button {
@@ -605,10 +668,13 @@ export default function SmartContractPage() {
           .contract-type-buttons {
             flex-direction: column;
             gap: 8px;
+            width: 100%;
           }
           
           .primary-button, .secondary-button {
             padding: 10px 20px;
+            width: 100%;
+            justify-content: center;
           }
         }
 

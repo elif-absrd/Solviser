@@ -3,10 +3,24 @@ import React from "react";
 interface QuickActionsProps {
   onNewContract: () => void;
   onImportContract: () => void;
+  onTemplateLibrary: () => void;
+  onContractBuilder: () => void;
 }
 
-export default function QuickActions({ onNewContract, onImportContract }: QuickActionsProps) {
+export default function QuickActions({ onNewContract, onImportContract, onTemplateLibrary, onContractBuilder }: QuickActionsProps) {
   const actionsRow1 = [
+    {
+      id: "templateLibrary",
+      title: "Browse Template Library",
+      icon: "�",
+      onClick: onTemplateLibrary
+    },
+    {
+      id: "contractBuilder",
+      title: "Contract Builder",
+      icon: "🏗️",
+      onClick: onContractBuilder
+    },
     {
       id: "newContract",
       title: "New Smart Contract",
@@ -16,15 +30,18 @@ export default function QuickActions({ onNewContract, onImportContract }: QuickA
     {
       id: "importContract",
       title: "Import Smart Contract",
-      icon: "�",
+      icon: "📋",
       onClick: onImportContract
     },
     {
       id: "uploadContract", 
       title: "Upload Contract Document",
-      icon: "�",
+      icon: "📁",
       onClick: () => alert("Upload contract feature coming soon!")
-    },
+    }
+  ];
+
+  const actionsRow2 = [
     {
       id: "viewRiskReport",
       title: "View Risk Report", 
@@ -36,10 +53,7 @@ export default function QuickActions({ onNewContract, onImportContract }: QuickA
       title: "Download All Contracts Report",
       icon: "�", 
       onClick: () => alert("Download report feature coming soon!")
-    }
-  ];
-
-  const actionsRow2 = [
+    },
     {
       id: "notifyBuyer",
       title: "Notify Buyer",
@@ -51,12 +65,6 @@ export default function QuickActions({ onNewContract, onImportContract }: QuickA
       title: "Renew Contract", 
       icon: "🔄",
       onClick: () => alert("Contract renewal feature coming soon!")
-    },
-    {
-      id: "reportDispute",
-      title: "Report Dispute",
-      icon: "⚠️", 
-      onClick: () => alert("Dispute reporting feature coming soon!")
     },
     {
       id: "exportAnalytics",

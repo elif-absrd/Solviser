@@ -394,8 +394,8 @@ const MeasurementCalculatorPage = () => {
                             <td className="px-4 py-3 text-right border-b border-white/10">₹{item.price.toFixed(2)}</td>
                             <td className="px-4 py-3 text-right border-b border-white/10">₹{item.amount.toFixed(2)}</td>
                             <td className="px-4 py-3 text-center border-b border-white/10">
-                              <button onClick={() => handleOpenEditModal(item)} className="text-blue-400 hover:text-blue-300 mr-3"><Edit size={16} /></button>
-                              <button onClick={() => handleOpenDeleteModal(item)} className="text-red-400 hover:text-red-300"><Trash2 size={16} /></button>
+                              <button onClick={() => handleOpenEditModal(item)} className="text-blue-400 hover:text-blue-300 mr-3" title="Edit item"><Edit size={16} /></button>
+                              <button onClick={() => handleOpenDeleteModal(item)} className="text-red-400 hover:text-red-300" title="Delete item"><Trash2 size={16} /></button>
                             </td>
                           </tr>
                         ))}
@@ -507,7 +507,7 @@ const EditModal = ({ item, onSave, onClose }: { item: CalculationItem | null, on
       <div className="bg-[#2c2829] text-white rounded-lg shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-semibold">Edit Item</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={24} /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white" title='Close'><X size={24} /></button>
         </div>
         <div className="space-y-4">
           <input type="text" id="itemName" value={editData.itemName} onChange={handleChange} className="w-full bg-white/10 rounded px-3 py-2" placeholder="Item Name"/>

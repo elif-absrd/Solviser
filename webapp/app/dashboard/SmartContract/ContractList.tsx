@@ -26,6 +26,7 @@ interface ContractListProps {
     status: string;
     sortBy: string;
   };
+  onStatusTracker?: (contractId: string) => void;
 }
 
 interface PaginationData {
@@ -35,7 +36,7 @@ interface PaginationData {
   totalPages: number;
 }
 
-export default function ContractList({ filters }: ContractListProps) {
+export default function ContractList({ filters, onStatusTracker }: ContractListProps) {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,
@@ -465,7 +466,13 @@ export default function ContractList({ filters }: ContractListProps) {
             <article 
               key={contract.id} 
               className="contract-card"
-              onClick={() => alert(`Contract details: ${contract.contractTitle}`)}
+              onClick={() => {
+                if (onStatusTracker) {
+                  onStatusTracker(contract.id);
+                } else {
+                  alert(`Contract details: ${contract.contractTitle}`);
+                }
+              }}
             >
               {/* Contract Header */}
               <div className="contract-header">

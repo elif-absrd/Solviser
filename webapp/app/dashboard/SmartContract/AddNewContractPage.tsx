@@ -217,7 +217,7 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
                 <p><span className="font-semibold">GST Number:</span> {formData.gstNumber}</p>
                 <p><span className="font-semibold">Date:</span> {formData.date}</p>
                 <p className="md:col-span-2"><span className="font-semibold">Address:</span> {formData.registeredAddress}</p>
-                <p><span className="font-semibold">Contract Title:</span> {formData.contractTitle}</p>
+                <p><span className="font-semibold">Contract Title:</span> {formData.contractTitle}</p> 
                 <p><span className="font-semibold">Contract Type:</span> {formData.contractType}</p>
                 <p><span className="font-semibold">Start Date:</span> {formData.startDate}</p>
                 <p><span className="font-semibold">End Date:</span> {formData.endDate}</p>
@@ -247,6 +247,7 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
             <button 
               onClick={onGoBack} 
               className="px-4 py-2.5 mr-4 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+              title='Go Back'
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5" />
