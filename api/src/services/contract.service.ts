@@ -830,3 +830,95 @@ export const reportDispute = async (disputeData: {
     throw new Error(`Failed to report dispute: ${error}`);
   }
 };
+
+// Generate analytics report data
+export const generateAnalyticsReport = async (organizationId: string) => {
+  try {
+    const contracts = await prisma.contract.findMany({
+      where: { organizationId },
+      include: {
+        milestones: true
+      }
+    });
+
+    const totalContracts = contracts.length;
+    const activeContracts = contracts.filter((c: any) => c.status === 'ACTIVE').length;
+    const completedContracts = contracts.filter((c: any) => c.status === 'COMPLETED').length;
+    const totalValue = contracts.reduce((sum: number, c: any) => sum + Number(c.contractValue), 0);
+    
+    const industryDistribution = contracts.reduce((acc: any, contract: any) => {
+      acc[contract.industry] = (acc[contract.industry] || 0) + 1;
+      return acc;
+    }, {});
+
+    const riskDistribution = contracts.reduce((acc: any, contract: any) => {
+      acc[contract.riskLevel] = (acc[contract.riskLevel] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      totalContracts,
+      activeContracts,
+      completedContracts,
+      totalValue,
+      industryDistribution,
+      riskDistribution,
+      contracts: contracts.slice(0, 10) // Top 10 contracts
+    };
+  } catch (error) {
+    throw new Error(`Failed to generate analytics report: ${error}`);
+  }
+};
+
+// Generate analytics PDF (simplified)
+export const generateAnalyticsPDF = async (data: any) => {
+  // For now, return a simple buffer. In production, use a PDF library like PDFKit
+  const content = `Contract Analytics Report\n\nTotal Contracts: ${data.totalContracts}\nActive Contracts: ${data.activeContracts}\nCompleted Contracts: ${data.completedContracts}\nTotal Value: $${data.totalValue.toLocaleString()}`;
+  return Buffer.from(content, 'utf-8');
+};
+
+// Generate risk analysis data
+export const generateRiskAnalysis = async (organizationId: string) => {
+  try {
+    const contracts = await prisma.contract.findMany({
+      where: { organizationId }
+    });
+
+    const highRiskContracts = contracts.filter((c: any) => c.riskLevel === 'HIGH').length;
+    const mediumRiskContracts = contracts.filter((c: any) => c.riskLevel === 'MEDIUM').length;
+    const lowRiskContracts = contracts.filter((c: any) => c.riskLevel === 'LOW').length;
+    
+    const riskFactors = {
+      paymentDelays: contracts.filter((c: any) => c.paymentTerms && parseInt(c.paymentTerms) > 30).length,
+      longTermContracts: contracts.filter((c: any) => {
+        const start = new Date(c.startDate);
+        const end = new Date(c.endDate);
+        const diffMonths = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30);
+        return diffMonths > 12;
+      }).length,
+      highValueContracts: contracts.filter((c: any) => Number(c.contractValue) > 100000).length
+    };
+
+    return {
+      totalContracts: contracts.length,
+      highRiskContracts,
+      mediumRiskContracts,
+      lowRiskContracts,
+      riskFactors,
+      recommendations: [
+        'Review payment terms for high-value contracts',
+        'Implement milestone-based payments',
+        'Regular risk assessment updates'
+      ]
+    };
+  } catch (error) {
+    throw new Error(`Failed to generate risk analysis: ${error}`);
+  }
+};
+
+// Generate risk analysis PDF (simplified)
+export const generateRiskAnalysisPDF = async (data: any) => {
+  // For now, return a simple buffer. In production, use a PDF library like PDFKit
+  const content = `Risk Analysis Report\n\nHigh Risk Contracts: ${data.highRiskContracts}\nMedium Risk Contracts: ${data.mediumRiskContracts}\nLow Risk Contracts: ${data.lowRiskContracts}\n\nRecommendations:\n${data.recommendations.join('\n')}`;
+  return Buffer.from(content, 'utf-8');
+};

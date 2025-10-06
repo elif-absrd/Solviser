@@ -21,7 +21,9 @@ import {
   deleteContractDocument,
   downloadContractBuyerReport,
   notifyBuyer,
-  reportDispute
+  reportDispute,
+  exportAnalytics,
+  getRiskAnalysis
 } from '../controllers/contract.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { can } from '../middleware/permission.middleware';
@@ -190,6 +192,22 @@ router.post(
   authenticateToken,
   can('contract.create'),
   reportDispute
+);
+
+// Export analytics
+router.get(
+  '/analytics/export',
+  authenticateToken,
+  can('contract.view.all'),
+  exportAnalytics
+);
+
+// Get risk analysis report
+router.get(
+  '/risk-analysis',
+  authenticateToken,
+  can('contract.view.all'),
+  getRiskAnalysis
 );
 
 export default router;

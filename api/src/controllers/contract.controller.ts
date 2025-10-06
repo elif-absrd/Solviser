@@ -399,3 +399,43 @@ export const reportDispute = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to report dispute.' });
   }
 };
+
+// Export contract analytics
+export const exportAnalytics = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const analyticsData = await contractService.generateAnalyticsReport(user.organizationId);
+    
+    // Generate PDF buffer
+    const pdfBuffer = await contractService.generateAnalyticsPDF(analyticsData);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="contract-analytics-report.pdf"');
+    res.send(pdfBuffer);
+  } catch (error: any) {
+    logger.error(`Export Analytics Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to export analytics.' });
+  }
+};
+
+// Get risk analysis report
+export const getRiskAnalysis = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const riskData = await contractService.generateRiskAnalysis(user.organizationId);
+    
+    // Generate PDF buffer
+    const pdfBuffer = await contractService.generateRiskAnalysisPDF(riskData);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="contract-risk-report.pdf"');
+    res.send(pdfBuffer);
+  } catch (error: any) {
+    logger.error(`Risk Analysis Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to generate risk analysis.' });
+  }
+};

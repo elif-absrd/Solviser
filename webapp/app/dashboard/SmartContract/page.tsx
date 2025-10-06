@@ -5,6 +5,7 @@ import ImportContractPage from "./ImportContractPage";
 import ContractList from "./ContractList";
 import ContractFilters from "./ContractFilters";
 import QuickActions from "./QuickActions";
+import ErrorBoundary from './ErrorBoundary';
 import ContractInsights from "./ContractInsights";
 import UpcomingMilestones from "./UpcomingMilestones";
 import StatCard from "./StatCard";
@@ -312,12 +313,14 @@ export default function SmartContractPage() {
               {/* Quick Action Center */}
               <section className="quick-action-center">
                 <h2 className="section-title">Quick Action Center</h2>
-                <QuickActions 
-                  onNewContract={() => setCurrentView("newContract")} 
-                  onImportContract={() => setCurrentView("importContract")}
-                  onTemplateLibrary={() => setCurrentView("templateLibrary")}
-                  onContractBuilder={() => handleContractBuilder()}
-                />
+                <ErrorBoundary>
+                  <QuickActions 
+                    onNewContract={() => setCurrentView("newContract")} 
+                    onImportContract={() => setCurrentView("importContract")}
+                    onTemplateLibrary={() => setCurrentView("templateLibrary")}
+                    onContractBuilder={() => handleContractBuilder()}
+                  />
+                </ErrorBoundary>
               </section>
 
               {/* Contracts Section */}
