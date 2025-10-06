@@ -1,0 +1,54 @@
+# ==========================================
+# API HEALTH & CONNECTIVITY TEST COMMANDS
+# ==========================================
+
+# QUICK HEALTH CHECK
+Invoke-WebRequest -Uri "http://localhost:3002/api/health" -Method GET
+
+# GET JUST THE RESPONSE CONTENT
+(Invoke-WebRequest -Uri "http://localhost:3002/api/health").Content
+
+# TEST PORT CONNECTIVITY
+Test-NetConnection -ComputerName localhost -Port 3002
+
+# ==========================================
+# CONTRACT API ENDPOINTS
+# ==========================================
+
+# Contract Statistics
+Invoke-WebRequest -Uri "http://localhost:3002/api/contracts/stats"
+
+# Contract List
+Invoke-WebRequest -Uri "http://localhost:3002/api/contracts?page=1&pageSize=5"
+
+# Contract Insights
+Invoke-WebRequest -Uri "http://localhost:3002/api/contracts/insights"
+
+# Contract Milestones
+Invoke-WebRequest -Uri "http://localhost:3002/api/contracts/milestones"
+
+# ==========================================
+# NODE.JS COMPREHENSIVE TESTS
+# ==========================================
+
+# Run the full test suite
+node test-api-health.js
+
+# Quick connectivity test only
+node test-api-health.js quick
+
+# ==========================================
+# TROUBLESHOOTING COMMANDS
+# ==========================================
+
+# Check what's running on port 3002
+netstat -ano | findstr :3002
+
+# Kill all Node processes if needed
+taskkill /f /im node.exe
+
+# Start API server
+pnpm dev:api
+
+# Start webapp
+pnpm dev:webapp

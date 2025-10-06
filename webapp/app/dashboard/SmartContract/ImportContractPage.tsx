@@ -5,6 +5,7 @@ import Stepper from './Stepper';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useContractDropdowns, useContractTemplate } from '../../../hooks/useContractDropdowns';
+import api from '../../../lib/api';
 
 interface ImportContractPageProps {
   onGoBack: () => void;
@@ -662,7 +663,7 @@ Cancellations and termination clauses.`,
     setCurrentStep(prev => prev - 1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate that all required terms are accepted
     const allTermsAccepted = Object.values(formData.termsAccepted).every(accepted => accepted);
     
@@ -671,10 +672,34 @@ Cancellations and termination clauses.`,
       return;
     }
     
-    // Here you would typically submit to your API
-    console.log('Submitting import contract:', formData);
-    alert('Import contract created successfully!');
-    onGoBack();
+    try {
+      // Submit import contract to API
+      const response = await api.post('/contracts', {
+        contractTitle: `Import Contract - ${formData.contractId}`,
+        contractType: 'import',
+        buyerName: formData.supplierName,
+        buyerRegisteredAddress: formData.firmName,
+        buyerContactPerson: formData.supplierName,
+        buyerEmail: formData.supplierEmail,
+        buyerPhone: formData.supplierPhone,
+        contractValue: formData.totalAmount,
+        currency: 'USD', // Assuming USD for import contracts
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(), // 6 months from now
+        termsAndClauses: `${formData.generalTerms}\n\nShipping Terms:\n${formData.shippingTermsText}\n\nPayment Terms:\n${formData.paymentTermsText}\n\nDelivery Terms:\n${formData.deliveryTerms}\n\nDispute Terms:\n${formData.disputeTerms}\n\nOther Terms:\n${formData.otherTerms}`,
+        industry: 'Import/Export',
+        priority: 'medium',
+        documentPath: null, // Will be updated when PDF is uploaded
+        notes: `Import Contract - Generated from template on ${new Date().toLocaleDateString()}`
+      });
+      
+      console.log('Import contract created:', response.data);
+      alert('Import contract created successfully!');
+      onGoBack();
+    } catch (error: any) {
+      console.error('Failed to create import contract:', error);
+      alert('Failed to create import contract: ' + (error.response?.data?.error || error.message));
+    }
   };
 
   const renderStepContent = () => {

@@ -28,7 +28,7 @@ export const createOrUpdateLegalProfile = async (userId: string, data: any) => {
         profileData.agreedToTermsAt = null; // Or handle as an error if all are required
     }
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
         const profile = await tx.legalServiceProviderProfile.upsert({
             where: { userId },
             update: profileData,

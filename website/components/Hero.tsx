@@ -7,8 +7,8 @@ import Link from 'next/link';
 export function Hero() {
   return (
     <section
-      className="relative bg-cover bg-center h-screen text-white flex items-center bg-no-repeat lg:bg-right overflow-hidden"
-      style={{ backgroundImage: "url('/banner.jpeg')" }}
+      className="relative h-screen text-white flex items-center overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
     >
       <div className="absolute inset-0 bg-black opacity-50"></div>
       

@@ -137,7 +137,7 @@ export interface RiskFactor {
   description: string;
 }
 
-export type ContractStatus = 'active' | 'completed' | 'at_risk' | 'defaulted' | 'in_renewal' | 'cancelled' | 'expired';
+export type ContractStatus = 'draft' | 'active' | 'completed' | 'at_risk' | 'defaulted' | 'in_renewal' | 'cancelled' | 'expired';
 export type ContractPriority = 'high' | 'medium' | 'low';
 export type RiskLevel = 'low' | 'medium' | 'high';
 export type ContractType = 'service' | 'purchase' | 'lease' | 'maintenance' | 'consulting' | 'licensing' | 'other';

@@ -143,9 +143,7 @@ export const useContractTemplate = (type: string) => {
     const fetchTemplate = async () => {
       try {
         const response = await api.get(`/contracts/templates/${type}`);
-        if (response.data) {
-          setTemplate(response.data);
-        }
+        setTemplate(response.data);
       } catch (error) {
         console.error('Error fetching template:', error);
         // Use fallback template if API is not available

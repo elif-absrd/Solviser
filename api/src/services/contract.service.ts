@@ -566,7 +566,7 @@ export const getDropdownOptions = async (category: string) => {
 
     return {
       category: categoryRecord.name,
-      options: categoryRecord.options.map(option => ({
+      options: categoryRecord.options.map((option: any) => ({
         id: option.id,
         value: option.value,
         label: option.label,
@@ -590,7 +590,7 @@ export const getContractTemplates = async (type: string) => {
       orderBy: { name: 'asc' }
     });
 
-    return templates.map(template => ({
+    return templates.map((template: any) => ({
       id: template.id,
       name: template.name,
       type: template.type,
@@ -604,5 +604,229 @@ export const getContractTemplates = async (type: string) => {
     }));
   } catch (error) {
     throw new Error(`Failed to get contract templates: ${error}`);
+  }
+};
+
+// Upload contract document
+export const uploadContractDocument = async (contractId: string, organizationId: string, documentData: {
+  documentName: string;
+  documentData: string;
+  documentType: string;
+}) => {
+  try {
+    // Verify contract exists and belongs to organization
+    const contract = await prisma.contract.findFirst({
+      where: { id: contractId, organizationId }
+    });
+
+    if (!contract) {
+      throw new Error('Contract not found');
+    }
+
+    // Check if there are already 2 documents
+    const existingDocuments = await prisma.contractDocument.count({
+      where: { contractId }
+    });
+
+    if (existingDocuments >= 2) {
+      throw new Error('Maximum of 2 documents allowed per contract');
+    }
+
+    // Calculate file size (approximate from base64)
+    const fileSize = Math.round((documentData.documentData.length * 3) / 4);
+
+    const document = await prisma.contractDocument.create({
+      data: {
+        contractId,
+        documentName: documentData.documentName,
+        documentType: documentData.documentType,
+        documentData: documentData.documentData,
+        fileSize,
+        uploadedBy: contract.createdById
+      }
+    });
+
+    return {
+      message: 'Document uploaded successfully',
+      document: {
+        id: document.id,
+        documentName: document.documentName,
+        documentType: document.documentType,
+        fileSize: document.fileSize,
+        createdAt: document.createdAt
+      }
+    };
+  } catch (error) {
+    throw new Error(`Failed to upload document: ${error}`);
+  }
+};
+
+// Delete contract document
+export const deleteContractDocument = async (contractId: string, documentId: string, organizationId: string) => {
+  try {
+    // Verify contract exists and belongs to organization
+    const contract = await prisma.contract.findFirst({
+      where: { id: contractId, organizationId }
+    });
+
+    if (!contract) {
+      throw new Error('Contract not found');
+    }
+
+    const document = await prisma.contractDocument.findFirst({
+      where: { id: documentId, contractId }
+    });
+
+    if (!document) {
+      throw new Error('Document not found');
+    }
+
+    await prisma.contractDocument.delete({
+      where: { id: documentId }
+    });
+
+    return { message: 'Document deleted successfully' };
+  } catch (error) {
+    throw new Error(`Failed to delete document: ${error}`);
+  }
+};
+
+// Generate contract buyer report PDF
+export const generateContractBuyerReport = async (organizationId: string) => {
+  try {
+    const contracts = await prisma.contract.findMany({
+      where: { organizationId },
+      include: {
+        createdBy: {
+          select: { name: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Simple PDF generation using a basic approach
+    const reportData = {
+      title: 'Contract Buyer Report',
+      generatedOn: new Date().toLocaleDateString(),
+      totalContracts: contracts.length,
+      contracts: contracts.map((contract: any) => ({
+        title: contract.contractTitle,
+        buyer: contract.buyerName,
+        gstNumber: contract.buyerGstNumber || 'N/A',
+        value: `${contract.currency} ${contract.contractValue.toLocaleString()}`,
+        status: contract.status,
+        createdAt: contract.createdAt.toLocaleDateString()
+      }))
+    };
+
+    // For now, return a JSON report that can be converted to PDF on frontend
+    // In production, you'd use a proper PDF library like pdfkit
+    const reportContent = JSON.stringify(reportData, null, 2);
+    return Buffer.from(reportContent, 'utf8');
+  } catch (error) {
+    throw new Error(`Failed to generate buyer report: ${error}`);
+  }
+};
+
+// Notify buyer
+export const notifyBuyer = async (
+  contractId: string,
+  gstNumber: string,
+  message: string,
+  notificationType: string,
+  organizationId: string,
+  sentByUserId: string
+) => {
+  try {
+    // Verify contract exists if contractId is provided
+    if (contractId) {
+      const contract = await prisma.contract.findFirst({
+        where: { id: contractId, organizationId, buyerGstNumber: gstNumber }
+      });
+
+      if (!contract) {
+        throw new Error('Contract not found or GST number mismatch');
+      }
+    }
+
+    const notification = await prisma.buyerNotification.create({
+      data: {
+        contractId: contractId || null,
+        buyerGstNumber: gstNumber,
+        message,
+        notificationType,
+        sentBy: sentByUserId,
+        organizationId
+      }
+    });
+
+    return {
+      message: 'Notification sent successfully',
+      notification: {
+        id: notification.id,
+        buyerGstNumber: notification.buyerGstNumber,
+        message: notification.message,
+        notificationType: notification.notificationType,
+        status: notification.status,
+        createdAt: notification.createdAt
+      }
+    };
+  } catch (error) {
+    throw new Error(`Failed to notify buyer: ${error}`);
+  }
+};
+
+// Report dispute
+export const reportDispute = async (disputeData: {
+  contractId?: string;
+  buyerGstNumber: string;
+  disputeReason: string;
+  description: string;
+  evidenceFiles?: string[];
+  reportedByUserId: string;
+  organizationId: string;
+}) => {
+  try {
+    // Verify contract exists if contractId is provided
+    if (disputeData.contractId) {
+      const contract = await prisma.contract.findFirst({
+        where: { 
+          id: disputeData.contractId, 
+          organizationId: disputeData.organizationId,
+          buyerGstNumber: disputeData.buyerGstNumber
+        }
+      });
+
+      if (!contract) {
+        throw new Error('Contract not found or GST number mismatch');
+      }
+    }
+
+    const dispute = await prisma.contractDispute.create({
+      data: {
+        contractId: disputeData.contractId || null,
+        buyerGstNumber: disputeData.buyerGstNumber,
+        disputeReason: disputeData.disputeReason,
+        description: disputeData.description,
+        evidenceFiles: disputeData.evidenceFiles ? JSON.stringify(disputeData.evidenceFiles) : null,
+        reportedBy: disputeData.reportedByUserId,
+        organizationId: disputeData.organizationId
+      }
+    });
+
+    return {
+      message: 'Dispute reported successfully',
+      dispute: {
+        id: dispute.id,
+        buyerGstNumber: dispute.buyerGstNumber,
+        disputeReason: dispute.disputeReason,
+        description: dispute.description,
+        status: dispute.status,
+        priority: dispute.priority,
+        createdAt: dispute.createdAt
+      }
+    };
+  } catch (error) {
+    throw new Error(`Failed to report dispute: ${error}`);
   }
 };

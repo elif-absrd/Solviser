@@ -14,7 +14,14 @@ import {
   getFinancialSummary,
   markContractSigned,
   getDropdownOptions,
-  getContractTemplates
+  getContractTemplates,
+  saveDraftContract,
+  getDraftContracts,
+  uploadContractDocument,
+  deleteContractDocument,
+  downloadContractBuyerReport,
+  notifyBuyer,
+  reportDispute
 } from '../controllers/contract.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { can } from '../middleware/permission.middleware';
@@ -89,6 +96,22 @@ router.post(
   createContract
 );
 
+// Save draft contract
+router.post(
+  '/drafts', 
+  authenticateToken, 
+  can('contract.create'), 
+  saveDraftContract
+);
+
+// Get all draft contracts
+router.get(
+  '/drafts', 
+  authenticateToken, 
+  can('contract.view.all'), 
+  getDraftContracts
+);
+
 // Get a specific contract by ID
 router.get(
   '/:id', 
@@ -127,6 +150,46 @@ router.delete(
   authenticateToken, 
   can('contract.create'), 
   deleteContract
+);
+
+// Upload contract document
+router.post(
+  '/:id/documents',
+  authenticateToken,
+  can('contract.create'),
+  uploadContractDocument
+);
+
+// Delete contract document
+router.delete(
+  '/:id/documents/:documentId',
+  authenticateToken,
+  can('contract.create'),
+  deleteContractDocument
+);
+
+// Download contract buyer report
+router.get(
+  '/reports/buyers',
+  authenticateToken,
+  can('contract.view.all'),
+  downloadContractBuyerReport
+);
+
+// Notify buyer
+router.post(
+  '/notify-buyer',
+  authenticateToken,
+  can('contract.create'),
+  notifyBuyer
+);
+
+// Report dispute
+router.post(
+  '/report-dispute',
+  authenticateToken,
+  can('contract.create'),
+  reportDispute
 );
 
 export default router;

@@ -4,14 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:api": "pnpm --filter api dev",
+    "dev:webapp": "pnpm --filter webapp dev",
+    "dev:website": "pnpm --filter website dev",
+    "dev:all": "concurrently \"pnpm dev:api\" \"pnpm dev:webapp\" \"pnpm dev:website\"",
+    "build:all": "pnpm --filter api build && pnpm --filter webapp build && pnpm --filter website build",
+    "install:all": "pnpm install && pnpm --filter api install && pnpm --filter webapp install && pnpm --filter website install"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "cross-env": "^10.0.0"
+    "cross-env": "^10.0.0",
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
     "@types/node": "^24.5.2"

@@ -70,6 +70,47 @@ export const createContract = async (req: Request, res: Response) => {
   }
 };
 
+// Create or update a draft contract
+export const saveDraftContract = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const draftData = req.body;
+    
+    // Save draft data with draft status
+    const draftContract = await contractService.createContract(user.organizationId, user.id, {
+      ...draftData,
+      status: 'draft'
+    });
+    
+    res.status(201).json({ message: 'Draft saved successfully!', contract: draftContract });
+  } catch (error: any) {
+    logger.error(`Save Draft Contract Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to save draft contract.' });
+  }
+};
+
+// Get all draft contracts
+export const getDraftContracts = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const drafts = await contractService.getContracts(
+      user.organizationId, 
+      { status: 'draft' }, 
+      { page: 1, pageSize: 50 }, 
+      { field: 'updatedAt', order: 'desc' }
+    );
+    
+    res.json(drafts);
+  } catch (error: any) {
+    logger.error(`Get Draft Contracts Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to retrieve draft contracts.' });
+  }
+};
+
 export const getContractById = async (req: Request, res: Response) => {
   try {
     const user = req.user!;
@@ -238,5 +279,123 @@ export const getContractTemplates = async (req: Request, res: Response) => {
       type: req.params.type,
     });
     res.status(500).json({ error: 'Failed to retrieve contract templates.' });
+  }
+};
+
+// Upload contract document
+export const uploadContractDocument = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const { id } = req.params;
+    const { documentName, documentData, documentType } = req.body;
+    
+    if (!documentData) {
+      return res.status(400).json({ error: 'Document data is required.' });
+    }
+    
+    const result = await contractService.uploadContractDocument(
+      id, 
+      user.organizationId, 
+      { documentName, documentData, documentType }
+    );
+    
+    res.json(result);
+  } catch (error: any) {
+    logger.error(`Upload Contract Document Error: ${error.message}`, {
+      userId: req.user?.userId,
+      contractId: req.params.id,
+    });
+    res.status(500).json({ error: 'Failed to upload contract document.' });
+  }
+};
+
+// Delete contract document
+export const deleteContractDocument = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const { id, documentId } = req.params;
+    
+    await contractService.deleteContractDocument(id, documentId, user.organizationId);
+    res.json({ message: 'Document deleted successfully!' });
+  } catch (error: any) {
+    logger.error(`Delete Contract Document Error: ${error.message}`, {
+      userId: req.user?.userId,
+      contractId: req.params.id,
+    });
+    res.status(500).json({ error: 'Failed to delete contract document.' });
+  }
+};
+
+// Download contract buyer report
+export const downloadContractBuyerReport = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const pdfBuffer = await contractService.generateContractBuyerReport(user.organizationId);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="contract-buyer-report.pdf"');
+    res.send(pdfBuffer);
+  } catch (error: any) {
+    logger.error(`Download Contract Buyer Report Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to generate contract buyer report.' });
+  }
+};
+
+// Notify buyer
+export const notifyBuyer = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const { contractId, gstNumber, message, notificationType } = req.body;
+    
+    if (!gstNumber || !message) {
+      return res.status(400).json({ error: 'GST number and message are required.' });
+    }
+    
+    const result = await contractService.notifyBuyer(
+      contractId,
+      gstNumber,
+      message,
+      notificationType || 'general',
+      user.organizationId,
+      user.id
+    );
+    
+    res.json(result);
+  } catch (error: any) {
+    logger.error(`Notify Buyer Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to notify buyer.' });
+  }
+};
+
+// Report dispute
+export const reportDispute = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const { contractId, buyerGstNumber, disputeReason, description, evidenceFiles } = req.body;
+    
+    if (!buyerGstNumber || !disputeReason || !description) {
+      return res.status(400).json({ error: 'Buyer GST number, dispute reason, and description are required.' });
+    }
+    
+    const result = await contractService.reportDispute({
+      contractId,
+      buyerGstNumber,
+      disputeReason,
+      description,
+      evidenceFiles: evidenceFiles || [],
+      reportedByUserId: user.id,
+      organizationId: user.organizationId
+    });
+    
+    res.json(result);
+  } catch (error: any) {
+    logger.error(`Report Dispute Error: ${error.message}`, {
+      userId: req.user?.userId,
+    });
+    res.status(500).json({ error: 'Failed to report dispute.' });
   }
 };

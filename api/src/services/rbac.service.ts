@@ -51,7 +51,7 @@ export const getRoleDetails = async (roleId: string, organizationId: string) => 
 
 export const updateRoleDetails = async (roleId: string, organizationId: string, name: string, permissionIds: string[]) => {
     // Transaction to ensure atomicity
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
         // First, verify the role belongs to the organization
         const role = await tx.role.findFirst({ where: { id: roleId, organizationId } });
         if (!role) {
@@ -99,7 +99,7 @@ export const getUsersByOrganization = (organizationId: string) => {
 };
 
 export const updateUserRoles = (userId: string, organizationId: string, roleIds: string[]) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
         // Verify the user belongs to the organization
         const user = await tx.user.findFirst({ where: { id: userId, organizationId } });
         if (!user) {

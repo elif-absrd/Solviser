@@ -48,7 +48,7 @@ export const getProviders = async (filters: { city?: string; search?: string }, 
     const totalCount = await prisma.legalServiceProviderProfile.count({ where: whereClause });
 
     // Format the data to match the frontend's expected structure
-    const formattedProviders = providers.map(p => ({
+    const formattedProviders = providers.map((p: any) => ({
         id: p.user.id, // Use user ID for unique avatar
         name: p.firmName || p.user.name,
         type: p.serviceCategories ? p.serviceCategories.split(',')[0] : 'Legal Services', // Get the first category from comma-separated string
@@ -57,7 +57,7 @@ export const getProviders = async (filters: { city?: string; search?: string }, 
         address: p.address,
         phone: p.contactNumber,
         email: p.email,
-        services: p.legalServiceOfferings.map(s => s.name),
+        services: p.legalServiceOfferings.map((s: any) => s.name),
     }));
 
     return { providers: formattedProviders, totalCount };

@@ -91,7 +91,7 @@ export const updatePermissionsForRole = async (roleId: string, permissionIds: st
   }
 
   // A transaction ensures the permission updates are atomic.
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     await tx.rolePermission.deleteMany({ where: { roleId: roleId } });
     if (permissionIds.length > 0) {
       await tx.rolePermission.createMany({
@@ -123,7 +123,7 @@ export const updatePermissionsForRole = async (roleId: string, permissionIds: st
       select: { organizationId: true },
     });
 
-    const organizationIds = subscriptions.map(sub => sub.organizationId);
+    const organizationIds = subscriptions.map((sub: any) => sub.organizationId);
     
     if (organizationIds.length === 0) {
         logger.info(`No organizations are subscribed to "${role.name}". No tokens to invalidate.`);

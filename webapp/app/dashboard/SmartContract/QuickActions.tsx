@@ -1,4 +1,8 @@
-import React from "react";
+﻿import React, { useState } from "react";
+import UploadDocumentModal from './UploadDocumentModal';
+import NotifyBuyerModal from './NotifyBuyerModal';
+import ReportDisputeModal from './ReportDisputeModal';
+import api from '../../../lib/api';
 
 interface QuickActionsProps {
   onNewContract: () => void;
@@ -7,6 +11,7 @@ interface QuickActionsProps {
   onContractBuilder: () => void;
 }
 
+<<<<<<< HEAD
 export default function QuickActions({ onNewContract, onImportContract, onTemplateLibrary, onContractBuilder }: QuickActionsProps) {
   const actionsRow1 = [
     {
@@ -71,133 +76,127 @@ export default function QuickActions({ onNewContract, onImportContract, onTempla
       title: "Export Contract Analytics",
       icon: "📈",
       onClick: () => alert("Analytics export feature coming soon!")
+=======
+const QuickActions: React.FC<QuickActionsProps> = ({ onNewContract, onImportContract }) => {
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+
+  const handleDownloadBuyerReport = async () => {
+    try {
+      const response = await api.get('/contracts/reports/buyers', {
+        responseType: 'blob'
+      });
+      
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'contract-buyer-report.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      alert('Failed to download report: ' + (error.response?.data?.error || error.message));
+>>>>>>> d1168c7 (kopal changes)
     }
-  ];
+  };
+
+  const handleSuccess = () => {
+    // Show success message or refresh data
+    alert('Action completed successfully!');
+  };
 
   return (
     <>
-      <style jsx>{`
-        .action-buttons-container {
-          border-radius: 8px;
-          background-color: #F05134;
-          box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
-          display: flex;
-          flex-direction: column;
-          align-items: stretch;
-          width: 100%;
-          padding: 24px;
-        }
-
-        @media (max-width: 991px) {
-          .action-buttons-container {
-            max-width: 100%;
-            padding: 16px;
-          }
-        }
-
-        .action-buttons-row {
-          display: flex;
-          align-items: stretch;
-          gap: 20px;
-          justify-content: space-between;
-        }
-
-        .action-buttons-row + .action-buttons-row {
-          margin-top: 20px;
-        }
-
-        .action-button {
-          border-radius: 8px;
-          background-color: #FFFFFF;
-          box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
-          border: 1px solid #E5E7EB;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          flex: 1;
-          padding: 24px 16px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-align: center;
-        }
-
-        .action-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.12);
-        }
-
-        .action-icon {
-          font-size: 32px;
-          margin-bottom: 12px;
-          display: block;
-        }
-
-        .action-text {
-          color: #374151;
-          font-size: 14px;
-          font-weight: 500;
-          line-height: 1.3;
-        }
-
-        @media (max-width: 991px) {
-          .action-buttons-row {
-            flex-direction: column;
-            gap: 12px;
-          }
-          
-          .action-button {
-            padding: 20px 12px;
-          }
-
-          .action-icon {
-            font-size: 28px;
-            margin-bottom: 8px;
-          }
-
-          .action-text {
-            font-size: 13px;
-          }
-        }
-
-        @media (max-width: 640px) {
-          .action-buttons-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-          }
-        }
-      `}</style>
-      
-      <div className="action-buttons-container">
-        {/* First Row */}
-        <div className="action-buttons-row">
-          {actionsRow1.map((action) => (
-            <button
-              key={action.id}
-              onClick={action.onClick}
-              className="action-button"
-            >
-              <span className="action-icon">{action.icon}</span>
-              <span className="action-text">{action.title}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Second Row */}
-        <div className="action-buttons-row">
-          {actionsRow2.map((action) => (
-            <button
-              key={action.id}
-              onClick={action.onClick}
-              className="action-button"
-            >
-              <span className="action-icon">{action.icon}</span>
-              <span className="action-text">{action.title}</span>
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-red-500 rounded-lg">
+        <button
+          onClick={onNewContract}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">📄</div>
+          <div className="text-sm">New Smart Contract</div>
+        </button>
+        
+        <button
+          onClick={onImportContract}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">📋</div>
+          <div className="text-sm">Import Smart Contract</div>
+        </button>
+        
+        <button
+          onClick={() => setUploadModalOpen(true)}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">📤</div>
+          <div className="text-sm">Upload Contract Document</div>
+        </button>
+        
+        <button
+          onClick={() => alert("Risk report functionality coming soon!")}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">📊</div>
+          <div className="text-sm">View Risk Report</div>
+        </button>
+        
+        <button
+          onClick={handleDownloadBuyerReport}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">📥</div>
+          <div className="text-sm">Download All Contract Buyer</div>
+        </button>
+        
+        <button
+          onClick={() => setNotifyModalOpen(true)}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">🔔</div>
+          <div className="text-sm">Notify Buyer</div>
+        </button>
+        
+        <button
+          onClick={() => alert("Renewal functionality coming soon!")}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">🔄</div>
+          <div className="text-sm">Renew Contract</div>
+        </button>
+        
+        <button
+          onClick={() => setDisputeModalOpen(true)}
+          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-4 rounded-lg text-center transition-all"
+        >
+          <div className="text-2xl mb-2">⚠️</div>
+          <div className="text-sm">Report Dispute</div>
+        </button>
       </div>
+
+      {/* Modals */}
+      <UploadDocumentModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        contractId="default" // This should be passed from parent or selected contract
+        onSuccess={handleSuccess}
+      />
+
+      <NotifyBuyerModal
+        isOpen={notifyModalOpen}
+        onClose={() => setNotifyModalOpen(false)}
+        onSuccess={handleSuccess}
+      />
+
+      <ReportDisputeModal
+        isOpen={disputeModalOpen}
+        onClose={() => setDisputeModalOpen(false)}
+        onSuccess={handleSuccess}
+      />
     </>
   );
-}
+};
+
+export default QuickActions;

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -23,6 +23,10 @@ model Organization {
   roles              Role[]
   auditLogs          AuditLog[]
   contracts          Contract[]
+  
+  // New Relations
+  buyerNotifications BuyerNotification[]
+  contractDisputes   ContractDispute[]
 
   @@map("organizations")
 }
@@ -73,6 +77,12 @@ model User {
   roles             UserRole[]
   auditLogs         AuditLog[]
   contracts         Contract[]
+  
+  // New Relations
+  uploadedDocuments ContractDocument[]
+  sentNotifications BuyerNotification[]
+  reportedDisputes  ContractDispute[] @relation("DisputeReporter")
+  assignedDisputes  ContractDispute[] @relation("DisputeAssignee")
 
   legalServiceProviderProfile LegalServiceProviderProfile?
   @@map("users")
@@ -232,7 +242,7 @@ model Contract {
   noticePeriodDays       Int?         @default(30) @map("notice_period_days")
   
   // Contract Status & Risk
-  status                 String       @default("active") // active, completed, at_risk, defaulted, in_renewal, cancelled, expired
+  status                 String       @default("draft") // draft, active, completed, at_risk, defaulted, in_renewal, cancelled, expired
   riskScore              Int          @default(50) @map("risk_score") // 0-100
   riskFactors            String?      @map("risk_factors") // JSON string of risk assessment
   lastReviewDate         DateTime?    @map("last_review_date")
@@ -267,6 +277,11 @@ model Contract {
   organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdBy              User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
   
+  // New Relations
+  documents              ContractDocument[]
+  notifications          BuyerNotification[]
+  disputes               ContractDispute[]
+  
   // Additional Relations (to be added later)
   // milestones             ContractMilestone[]
   // amendments             ContractAmendment[]
@@ -297,7 +312,7 @@ model ContractDropdownOption {
   sortOrder   Int      @default(0)
   isActive    Boolean  @default(true)
   parentId    Int?     // For hierarchical options (e.g., sub-categories)
-  metadata    Json?    // Additional data like country codes, etc.
+  metadata    String?    // Additional data like country codes, etc. - Changed from Json to String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -312,16 +327,77 @@ model ContractTemplate {
   id               Int      @id @default(autoincrement())
   name             String
   type             String   // "import", "export", "domestic", etc.
-  generalTerms     String?  @db.Text
-  shippingTerms    String?  @db.Text
-  paymentTerms     String?  @db.Text
-  deliveryTerms    String?  @db.Text
-  disputeTerms     String?  @db.Text
-  otherTerms       String?  @db.Text
+  generalTerms     String?
+  shippingTerms    String?
+  paymentTerms     String?
+  deliveryTerms    String?
+  disputeTerms     String?
+  otherTerms       String?
   isDefault        Boolean  @default(false)
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   
   @@map("contract_templates")
+}
+
+model ContractDocument {
+  id           String   @id @default(uuid())
+  contractId   String   @map("contract_id")
+  documentName String   @map("document_name")
+  documentType String   @map("document_type") // pdf, doc, docx, etc.
+  documentData String   @map("document_data") // base64 encoded document data
+  fileSize     Int?     @map("file_size")
+  uploadedBy   String   @map("uploaded_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  contract     Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  uploadedByUser User   @relation(fields: [uploadedBy], references: [id])
+  
+  @@map("contract_documents")
+}
+
+model BuyerNotification {
+  id               String   @id @default(uuid())
+  contractId       String?  @map("contract_id")
+  buyerGstNumber   String   @map("buyer_gst_number")
+  message          String
+  notificationType String   @default("general") @map("notification_type") // general, payment_reminder, contract_expiry, etc.
+  status           String   @default("sent") // sent, delivered, read
+  sentBy           String   @map("sent_by")
+  organizationId   String   @map("organization_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  
+  contract         Contract?     @relation(fields: [contractId], references: [id])
+  sentByUser       User          @relation(fields: [sentBy], references: [id])
+  organization     Organization  @relation(fields: [organizationId], references: [id])
+  
+  @@map("buyer_notifications")
+}
+
+model ContractDispute {
+  id              String   @id @default(uuid())
+  contractId      String?  @map("contract_id")
+  buyerGstNumber  String   @map("buyer_gst_number")
+  disputeReason   String   @map("dispute_reason") // payment_delay, quality_issue, breach_of_contract, etc.
+  description     String
+  status          String   @default("open") // open, in_progress, resolved, closed
+  priority        String   @default("medium") // low, medium, high, urgent
+  evidenceFiles   String?  @map("evidence_files") // JSON array of base64 encoded files
+  reportedBy      String   @map("reported_by")
+  assignedTo      String?  @map("assigned_to")
+  organizationId  String   @map("organization_id")
+  resolutionNotes String?  @map("resolution_notes")
+  resolvedAt      DateTime? @map("resolved_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  contract        Contract?     @relation(fields: [contractId], references: [id])
+  reportedByUser  User          @relation("DisputeReporter", fields: [reportedBy], references: [id])
+  assignedToUser  User?         @relation("DisputeAssignee", fields: [assignedTo], references: [id])
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+  
+  @@map("contract_disputes")
 }

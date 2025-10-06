@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
 
 // This is the standard way to declare a global Prisma Client instance in a development environment.
 // It prevents multiple instances from being created by Next.js hot-reloading.
 declare global {
-  var prisma: PrismaClient | undefined;
+  var prisma: any | undefined;
 }
 
 const prisma = global.prisma || new PrismaClient();

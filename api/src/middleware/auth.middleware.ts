@@ -17,6 +17,21 @@ interface JwtPayload {
 }
 
 export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+  // Development mode - bypass authentication
+  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    req.user = {
+      userId: 'dev-user-id',
+      organizationId: 'dev-org-id',
+      isOwner: true,
+      name: 'Development User',
+      email: 'dev@example.com',
+      isSuperAdmin: true,
+      permissions: ['dashboard.view', 'contract.create', 'contract.view.all', 'user.read'],
+      tokenVersion: 1
+    };
+    return next();
+  }
+
   const token = req.cookies.authToken;
 
   if (!token) {
