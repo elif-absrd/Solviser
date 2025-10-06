@@ -2,9 +2,7 @@ module.exports = {
   reactStrictMode: true,
   transpilePackages: ['ui'],
   outputFileTracingRoot: process.cwd(),
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client']
-  },
+  serverExternalPackages: ['@prisma/client'],
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

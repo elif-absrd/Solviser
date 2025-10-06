@@ -2,6 +2,7 @@
 module.exports = {
   reactStrictMode: true,
   transpilePackages: ['ui'],
+  outputFileTracingRoot: process.cwd(),
   
   // We need to add a custom headers configuration to allow the Google OAuth popup to work.
   async headers() {

@@ -4,7 +4,7 @@ import axios from 'axios';
 // This uses an environment variable for production and a fallback for local development.
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api',
-  withCredentials: false, // Temporarily disabled for testing
+  withCredentials: true, // Enable credentials for cookie-based auth
 });
 
 // The request interceptor is not strictly needed for auth anymore,

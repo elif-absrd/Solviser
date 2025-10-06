@@ -69,27 +69,6 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
     setCurrentStep((prevStep) => prevStep - 1);
   };
 
-  // Function to handle saving draft
-  const handleSaveDraft = async () => {
-    try {
-      const draftData = {
-        ...formData,
-        status: 'draft' // Add draft status
-      };
-      
-      // Save to localStorage as backup
-      localStorage.setItem('contractDraft', JSON.stringify(draftData));
-      
-      // You can also save to database if you have a drafts endpoint
-      // await api.post('/contracts/drafts', draftData);
-      
-      alert('Draft saved successfully!');
-    } catch (error: any) {
-      console.error('Failed to save draft:', error);
-      alert('Failed to save draft');
-    }
-  };
-
   // Function to handle contract submission
   const handleSubmit = async () => {
     if (!formData.agreedToTerms) {
@@ -115,8 +94,6 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
       });
 
       alert('Contract created successfully!');
-      // Clear draft from localStorage
-      localStorage.removeItem('contractDraft');
       onGoBack(); // Go back to the dashboard
     } catch (error: any) {
       console.error('Failed to create contract:', error);
@@ -279,10 +256,7 @@ export default function AddNewContractPage({ onGoBack }: AddNewContractPageProps
             </button>
             <h1 className="text-3xl font-semibold text-gray-800">Add New Contract</h1>
         </div>
-        <button 
-          onClick={handleSaveDraft}
-          className="px-6 py-2.5 bg-white text-gray-700 rounded-full border border-gray-300 shadow-md hover:bg-gray-100 transition-colors"
-        >
+        <button className="px-6 py-2.5 bg-white text-gray-700 rounded-full border border-gray-300 shadow-md hover:bg-gray-100 transition-colors">
           Save Draft
         </button>
       </div>
