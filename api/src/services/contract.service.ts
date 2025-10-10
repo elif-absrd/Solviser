@@ -39,8 +39,7 @@ export const getContracts = async (
 
   if (filters.buyer) {
     where.buyerName = {
-      contains: filters.buyer,
-      mode: 'insensitive'
+      contains: filters.buyer
     };
   }
 
@@ -49,7 +48,22 @@ export const getContracts = async (
   }
 
   if (filters.status) {
-    where.status = filters.status;
+    // Map lowercase status to uppercase enum values
+    const statusMap: { [key: string]: string } = {
+      'draft': 'DRAFT',
+      'active': 'ACTIVE',
+      'completed': 'COMPLETED',
+      'at_risk': 'AT_RISK',
+      'terminated': 'TERMINATED',
+      'renewed': 'RENEWED',
+      'expired': 'EXPIRED',
+      'disputed': 'DISPUTED',
+      'pending_review': 'PENDING_REVIEW',
+      'under_review': 'UNDER_REVIEW',
+      'approved': 'APPROVED'
+    };
+    
+    where.status = statusMap[filters.status.toLowerCase()] || filters.status.toUpperCase();
   }
 
   // Build order by clause
@@ -103,19 +117,19 @@ export const getContractStats = async (organizationId: string) => {
     totalValue
   ] = await Promise.all([
     prisma.contract.count({
-      where: { organizationId, status: 'active' }
+      where: { organizationId, status: 'ACTIVE' }
     }),
     prisma.contract.count({
-      where: { organizationId, status: 'completed' }
+      where: { organizationId, status: 'COMPLETED' }
     }),
     prisma.contract.count({
-      where: { organizationId, status: 'at_risk' }
+      where: { organizationId, status: 'AT_RISK' }
     }),
     prisma.contract.count({
-      where: { organizationId, status: 'defaulted' }
+      where: { organizationId, status: 'TERMINATED' }
     }),
     prisma.contract.count({
-      where: { organizationId, status: 'in_renewal' }
+      where: { organizationId, status: 'RENEWED' }
     }),
     prisma.contract.aggregate({
       where: { organizationId },
@@ -150,6 +164,58 @@ export const getContractStats = async (organizationId: string) => {
 };
 
 export const createContract = async (organizationId: string, userId: string, contractData: ContractCreateInput) => {
+  // Validate inputs
+  if (!organizationId) {
+    throw new Error('Organization ID is required');
+  }
+  if (!userId) {
+    throw new Error('User ID is required');
+  }
+
+  // Ensure organization exists
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId }
+  });
+  
+  if (!organization) {
+    // Create development organization if it doesn't exist
+    if (process.env.NODE_ENV === 'development' && organizationId === 'dev-org-id') {
+      await prisma.organization.create({
+        data: {
+          id: 'dev-org-id',
+          name: 'Development Organization',
+          ownerId: 'dev-user-id'
+        }
+      });
+    } else {
+      throw new Error('Organization not found');
+    }
+  }
+
+  // Ensure user exists
+  const user = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+  
+  if (!user) {
+    // Create development user if it doesn't exist
+    if (process.env.NODE_ENV === 'development' && userId === 'dev-user-id') {
+      await prisma.user.create({
+        data: {
+          id: 'dev-user-id',
+          name: 'Development User',
+          email: 'dev@example.com',
+          passwordHash: 'dev-hash',
+          organizationId: 'dev-org-id',
+          isOwner: true,
+          isSuperAdmin: true
+        }
+      });
+    } else {
+      throw new Error('User not found');
+    }
+  }
+
   // Generate unique contract number
   const contractNumber = await generateContractNumber(organizationId);
   
@@ -202,7 +268,7 @@ export const createContract = async (organizationId: string, userId: string, con
       nextReviewDate,
       
       // Status & Risk
-      status: 'active',
+      status: 'ACTIVE',
       riskScore,
       riskFactors: JSON.stringify(assessRiskFactors(contractData)),
       
@@ -221,6 +287,19 @@ export const createContract = async (organizationId: string, userId: string, con
       // Document Management
       documentPath: contractData.documentPath,
       notes: contractData.notes,
+      
+      // Import Contract Specific Fields
+      isImportContract: contractData.isImportContract || false,
+      documentsSkipped: contractData.documentsSkipped || false,
+      presentationDeadline: contractData.presentationDeadline ? new Date(contractData.presentationDeadline) : null,
+      
+      // Document flags
+      hasCommercialInvoice: contractData.hasCommercialInvoice || false,
+      hasPackingList: contractData.hasPackingList || false,
+      hasBillOfLanding: contractData.hasBillOfLanding || false,
+      hasCertificateOfOrigin: contractData.hasCertificateOfOrigin || false,
+      hasInsuranceCertificate: contractData.hasInsuranceCertificate || false,
+      hasPhytosanitaryCertificate: contractData.hasPhytosanitaryCertificate || false,
     },
     include: {
       createdBy: {
@@ -345,14 +424,32 @@ export const getUpcomingMilestones = async (organizationId: string) => {
         lte: thirtyDaysFromNow
       },
       status: {
-        in: ['active', 'in_renewal']
+        in: ['ACTIVE', 'RENEWED']
       }
     },
     orderBy: { endDate: 'asc' },
     take: 10
   });
 
-  const milestones = expiringContracts.map((contract: any) => {
+  // Get contracts with document presentation deadlines
+  const documentDeadlineContracts = await prisma.contract.findMany({
+    where: {
+      organizationId,
+      documentsSkipped: true,
+      presentationDeadline: {
+        gte: new Date(),
+        lte: thirtyDaysFromNow
+      },
+      status: {
+        in: ['ACTIVE', 'DRAFT']
+      }
+    },
+    orderBy: { presentationDeadline: 'asc' },
+    take: 10
+  });
+
+  // Process contract expiry milestones
+  const expiryMilestones = expiringContracts.map((contract: any) => {
     const daysUntilExpiry = Math.ceil(
       (contract.endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -374,7 +471,34 @@ export const getUpcomingMilestones = async (organizationId: string) => {
     };
   });
 
-  return milestones;
+  // Process document presentation deadlines
+  const documentMilestones = documentDeadlineContracts.map((contract: any) => {
+    const daysUntilDeadline = Math.ceil(
+      (contract.presentationDeadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    let urgency = 'normal';
+    if (daysUntilDeadline <= 1) urgency = 'urgent';
+    else if (daysUntilDeadline <= 3) urgency = 'warning';
+
+    return {
+      id: `${contract.id}_documents`,
+      type: 'document_deadline',
+      title: 'Document Presentation Required',
+      company: contract.buyerName,
+      contractValue: contract.contractValue,
+      dueDate: contract.presentationDeadline,
+      daysUntilDue: daysUntilDeadline,
+      urgency,
+      contractId: contract.id
+    };
+  });
+
+  // Combine and sort all milestones by due date
+  const allMilestones = [...expiryMilestones, ...documentMilestones];
+  allMilestones.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+  return allMilestones.slice(0, 10); // Return top 10 upcoming milestones
 };
 
 // Archive old contracts

@@ -48,6 +48,8 @@ export default function UpcomingMilestones() {
         return <DollarSign className="w-5 h-5 text-green-600" />;
       case 'renewal':
         return <RefreshCw className="w-5 h-5 text-blue-600" />;
+      case 'document_deadline':
+        return <Calendar className="w-5 h-5 text-orange-600" />;
       case 'expiry':
         return <Calendar className="w-5 h-5 text-red-600" />;
       default:

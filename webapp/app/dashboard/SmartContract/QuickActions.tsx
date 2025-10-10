@@ -7,17 +7,17 @@ import ReportDisputeModal from './ReportDisputeModal';
 import api from '../../../lib/api';
 
 interface QuickActionsProps {
-  onNewContract: () => void;
   onImportContract: () => void;
   onTemplateLibrary: () => void;
   onContractBuilder: () => void;
+  onPreviousContracts: () => void;
 }
 
 const QuickActions: React.FC<QuickActionsProps> = ({ 
-  onNewContract, 
   onImportContract, 
   onTemplateLibrary, 
-  onContractBuilder 
+  onContractBuilder,
+  onPreviousContracts
 }) => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
@@ -102,22 +102,16 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       onClick: onContractBuilder
     },
     {
-      id: "newContract",
-      title: "New Smart Contract",
-      icon: "📄",
-      onClick: onNewContract
-    },
-    {
       id: "importContract",
       title: "Import Smart Contract", 
       icon: "📋",
       onClick: onImportContract
     },
     {
-      id: "uploadContract",
-      title: "Upload Contract Document",
-      icon: "📁",
-      onClick: () => setUploadModalOpen(true)
+      id: "previousContracts",
+      title: "Previous Contracts",
+      icon: "📜",
+      onClick: onPreviousContracts
     }
   ];
 
@@ -127,12 +121,6 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       title: "View Risk Report",
       icon: "📊",
       onClick: handleViewRiskReport
-    },
-    {
-      id: "downloadReport", 
-      title: "Download All Contracts Report",
-      icon: "📥",
-      onClick: handleDownloadBuyerReport
     },
     {
       id: "notifyBuyer",

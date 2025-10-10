@@ -86,31 +86,6 @@ const contractDropdownData = [
   }
 ];
 
-const contractTemplates = [
-  {
-    name: 'Standard Import Contract',
-    type: 'import',
-    generalTerms: `This contract shall be valid between two parties.
-Any modifications shall be made in writing and with mutual consent.
-Relevant Indian/International laws shall apply.
-Tax/Duty responsibilities of supplier/buyer shall be clearly specified.`,
-    shippingTerms: `Risk and insurance responsibility determined according to shipping terms (CIF/CFR/CNF).
-Delivery port/port of discharge shall be specified.
-Penalty/conditions for late shipment.`,
-    paymentTerms: `L/C or D/P rules; payment only upon accuracy of documents.
-Document presentation period and banking procedures.
-Interest on late payment (if applicable).`,
-    deliveryTerms: `Packing specifications, supply window, partial deliveries terms.
-Inspection and rejected shipment procedures.`,
-    disputeTerms: `In case of disputes, first attempt negotiation, if unresolved then arbitration [location/rules] shall apply.
-Time limits and expert panel provisions.`,
-    otherTerms: `Force Majeure clause.
-Confidentiality, IP policies.
-Cancellations and termination clauses.`,
-    isDefault: true
-  }
-];
-
 async function seedContractOptions() {
   console.log('Seeding contract dropdown options...');
 
@@ -141,12 +116,40 @@ async function seedContractOptions() {
   }
 
   // Seed contract templates
-  for (const template of contractTemplates) {
-    await prisma.contractTemplate.upsert({
-      where: { id: -1 }, // This will always fail, so it will create
-      update: {},
-      create: template
+  const templateData = [
+    {
+      name: 'Standard Import Contract',
+      type: 'import',
+      category: 'standard',
+      description: 'Standard template for import contracts',
+      language: 'ENGLISH' as const,
+      generalTerms: `This contract shall be valid between two parties.
+Any modifications shall be made in writing and with mutual consent.
+Relevant Indian/International laws shall apply.
+Tax/Duty responsibilities of supplier/buyer shall be clearly specified.`,
+      shippingTerms: `Risk and insurance responsibility determined according to shipping terms (CIF/CFR/CNF).
+Delivery port/port of discharge shall be specified.
+Penalty/conditions for late shipment.`,
+      paymentTerms: `L/C or D/P rules; payment only upon accuracy of documents.
+Document presentation period and banking procedures.
+Interest on late payment (if applicable).`,
+      deliveryTerms: `Packing specifications, supply window, partial deliveries terms.
+Inspection and rejected shipment procedures.`,
+      isStandard: true,
+      isActive: true
+    }
+  ];
+
+  for (const template of templateData) {
+    const existingTemplate = await prisma.contractTemplate.findFirst({
+      where: { name: template.name }
     });
+    
+    if (!existingTemplate) {
+      await prisma.contractTemplate.create({
+        data: template
+      });
+    }
   }
 
   console.log('✅ Contract options and templates seeded successfully');

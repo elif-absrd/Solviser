@@ -1,0 +1,1586 @@
+<html class=""><head>
+    
+    
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+      window.FontAwesomeConfig = {
+          autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+      };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    
+<style>
+  * { font-family: 'Inter', sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+</style>
+
+    
+<style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+</style>
+
+    
+<style>
+   :root {
+          /* Base colors */
+          --color-base: #ffffff;
+          --color-base-50: #f9fafb;
+          --color-base-100: #f3f4f6;
+          --color-base-200: #e5e7eb;
+          --color-base-300: #d1d5db;
+          --color-base-400: #9ca3af;
+          --color-base-500: #6b7280;
+          --color-base-600: #4b5563;  
+          --color-base-700: #374151;
+          --color-base-800: #1f2937;  
+          --color-base-900: #111827;
+          --color-base-content: #1f2937;
+
+          /* Primary colors */
+          --color-primary: #3b82f6;
+          --color-primary-50: #eff6ff;
+          --color-primary-100: #dbeafe;
+          --color-primary-200: #bfdbfe;
+          --color-primary-300: #93c5fd;
+          --color-primary-400: #60a5fa;
+          --color-primary-500: #3b82f6;
+          --color-primary-600: #2563eb;
+          --color-primary-700: #1d4ed8;
+          --color-primary-800: #1e40af;
+          --color-primary-900: #1e3a8a;
+          --color-primary-focus: #2563eb;
+          --color-primary-content: #ffffff;
+
+          /* Secondary colors */
+          --color-secondary: #8b5cf6;
+          --color-secondary-50: #f5f3ff;
+          --color-secondary-100: #ede9fe;
+          --color-secondary-200: #ddd6fe;
+          --color-secondary-300: #c4b5fd;
+          --color-secondary-400: #a78bfa;
+          --color-secondary-500: #8b5cf6;
+          --color-secondary-600: #7c3aed;
+          --color-secondary-700: #6d28d9;
+          --color-secondary-800: #5b21b6;
+          --color-secondary-900: #4c1d95;
+          --color-secondary-focus: #7c3aed;
+          --color-secondary-content: #ffffff;
+
+          /* Accent colors */
+          --color-accent: #f472b6;
+          --color-accent-50: #fdf2f8;
+          --color-accent-100: #fce7f3;
+          --color-accent-200: #fbcfe8;
+          --color-accent-300: #f9a8d4;
+          --color-accent-400: #f472b6;
+          --color-accent-500: #ec4899;
+          --color-accent-600: #db2777;
+          --color-accent-700: #be185d;
+          --color-accent-800: #9d174d;
+          --color-accent-900: #831843;
+          --color-accent-focus: #db2777;
+          --color-accent-content: #ffffff;
+
+          /* Neutral colors */
+          --color-neutral: #6b7280;
+          --color-neutral-50: #f9fafb;
+          --color-neutral-100: #f3f4f6;
+          --color-neutral-200: #e5e7eb;
+          --color-neutral-300: #d1d5db;
+          --color-neutral-400: #9ca3af;
+          --color-neutral-500: #6b7280;
+          --color-neutral-600: #4b5563;
+          --color-neutral-700: #374151;
+          --color-neutral-800: #1f2937;
+          --color-neutral-900: #111827;
+          --color-neutral-focus: #4b5563;
+          --color-neutral-content: #ffffff;
+
+          /* Info colors */
+          --color-info: #3b82f6;
+          --color-info-50: #eff6ff;
+          --color-info-100: #dbeafe;
+          --color-info-200: #bfdbfe;
+          --color-info-300: #93c5fd;
+          --color-info-400: #60a5fa;
+          --color-info-500: #3b82f6;
+          --color-info-600: #2563eb;
+          --color-info-700: #1d4ed8;
+          --color-info-800: #1e40af;
+          --color-info-900: #1e3a8a;
+          --color-info-focus: #2563eb;
+          --color-info-content: #ffffff;
+
+          /* Success colors */
+          --color-success: #10b981;
+          --color-success-50: #ecfdf5;
+          --color-success-100: #d1fae5;
+          --color-success-200: #a7f3d0;
+          --color-success-300: #6ee7b7;
+          --color-success-400: #34d399;
+          --color-success-500: #10b981;
+          --color-success-600: #059669;
+          --color-success-700: #047857;
+          --color-success-800: #065f46;
+          --color-success-900: #064e3b;
+          --color-success-focus: #059669;
+          --color-success-content: #ffffff;
+
+          /* Warning colors */
+          --color-warning: #f59e0b;
+          --color-warning-50: #fffbeb;
+          --color-warning-100: #fef3c7;
+          --color-warning-200: #fde68a;
+          --color-warning-300: #fcd34d;
+          --color-warning-400: #fbbf24;
+          --color-warning-500: #f59e0b;
+          --color-warning-600: #d97706;
+          --color-warning-700: #b45309;
+          --color-warning-800: #92400e;
+          --color-warning-900: #78350f;
+          --color-warning-focus: #d97706;
+          --color-warning-content: #ffffff;
+
+          /* Error colors */
+          --color-error: #ef4444;
+          --color-error-50: #fef2f2;
+          --color-error-100: #fee2e2;
+          --color-error-200: #fecaca;
+          --color-error-300: #fca5a5;
+          --color-error-400: #f87171;
+          --color-error-500: #ef4444;
+          --color-error-600: #dc2626;
+          --color-error-700: #b91c1c;
+          --color-error-800: #991b1b;
+          --color-error-900: #7f1d1d;
+          --color-error-focus: #dc2626;
+          --color-error-content: #ffffff;
+        }
+</style>
+
+    
+<style>
+/* Dark theme */
+        .dark {
+          /* Base colors */
+          --color-base: #1f2937;
+          --color-base-50: #111827;
+          --color-base-100: #1f2937;
+          --color-base-200: #374151;
+          --color-base-300: #4b5563;
+          --color-base-400: #6b7280;
+          --color-base-500: #9ca3af;
+          --color-base-600: #d1d5db;
+          --color-base-700: #e5e7eb;
+          --color-base-800: #f3f4f6;
+          --color-base-900: #f9fafb;
+          --color-base-content: #f9fafb;
+
+          /* Primary colors */
+          --color-primary: #60a5fa;
+          --color-primary-50: #1e3a8a;
+          --color-primary-100: #1e40af;
+          --color-primary-200: #1d4ed8;
+          --color-primary-300: #2563eb;
+          --color-primary-400: #3b82f6;
+          --color-primary-500: #60a5fa;
+          --color-primary-600: #93c5fd;
+          --color-primary-700: #bfdbfe;
+          --color-primary-800: #dbeafe;
+          --color-primary-900: #eff6ff;
+          --color-primary-focus: #3b82f6;
+          --color-primary-content: #1f2937;
+
+          /* Secondary colors */
+          --color-secondary: #a78bfa;
+          --color-secondary-50: #4c1d95;
+          --color-secondary-100: #5b21b6;
+          --color-secondary-200: #6d28d9;
+          --color-secondary-300: #7c3aed;
+          --color-secondary-400: #8b5cf6;
+          --color-secondary-500: #a78bfa;
+          --color-secondary-600: #c4b5fd;
+          --color-secondary-700: #ddd6fe;
+          --color-secondary-800: #ede9fe;
+          --color-secondary-900: #f5f3ff;
+          --color-secondary-focus: #8b5cf6;
+          --color-secondary-content: #1f2937;
+
+          /* Accent colors */
+          --color-accent: #f472b6;
+          --color-accent-50: #831843;
+          --color-accent-100: #9d174d;
+          --color-accent-200: #be185d;
+          --color-accent-300: #db2777;
+          --color-accent-400: #ec4899;
+          --color-accent-500: #f472b6;
+          --color-accent-600: #f9a8d4;
+          --color-accent-700: #fbcfe8;
+          --color-accent-800: #fce7f3;
+          --color-accent-900: #fdf2f8;
+          --color-accent-focus: #ec4899;
+          --color-accent-content: #1f2937;
+
+          /* Neutral colors remain the same as light theme */
+
+          /* Info colors */
+          --color-info: #60a5fa;
+          --color-info-50: #1e3a8a;
+          --color-info-100: #1e40af;
+          --color-info-200: #1d4ed8;
+          --color-info-300: #2563eb;
+          --color-info-400: #3b82f6;
+          --color-info-500: #60a5fa;
+          --color-info-600: #93c5fd;
+          --color-info-700: #bfdbfe;
+          --color-info-800: #dbeafe;
+          --color-info-900: #eff6ff;
+          --color-info-focus: #3b82f6;
+          --color-info-content: #1f2937;
+
+          /* Success colors */
+          --color-success: #34d399;
+          --color-success-50: #064e3b;
+          --color-success-100: #065f46;
+          --color-success-200: #047857;
+          --color-success-300: #059669;
+          --color-success-400: #10b981;
+          --color-success-500: #34d399;
+          --color-success-600: #6ee7b7;
+          --color-success-700: #a7f3d0;
+          --color-success-800: #d1fae5;
+          --color-success-900: #ecfdf5;
+          --color-success-focus: #10b981;
+          --color-success-content: #1f2937;
+
+          /* Warning colors */
+          --color-warning: #fbbf24;
+          --color-warning-50: #78350f;
+          --color-warning-100: #92400e;
+          --color-warning-200: #b45309;
+          --color-warning-300: #d97706;
+          --color-warning-400: #f59e0b;
+          --color-warning-500: #fbbf24;
+          --color-warning-600: #fcd34d;
+          --color-warning-700: #fde68a;
+          --color-warning-800: #fef3c7;
+          --color-warning-900: #fffbeb;
+          --color-warning-focus: #f59e0b;
+          --color-warning-content: #1f2937;
+
+          /* Error colors */
+          --color-error: #f87171;
+          --color-error-50: #7f1d1d;
+          --color-error-100: #991b1b;
+          --color-error-200: #b91c1c;
+          --color-error-300: #dc2626;
+          --color-error-400: #ef4444;
+          --color-error-500: #f87171;
+          --color-error-600: #fca5a5;
+          --color-error-700: #fecaca;
+          --color-error-800: #fee2e2;
+          --color-error-900: #fef2f2;
+          --color-error-focus: #ef4444;
+          --color-error-content: #1f2937;
+        }
+</style>
+
+    
+  <script>tailwind.config = {
+  "theme": {
+    "extend": {
+      "colors": {
+        "transparent": "transparent",
+        "current": "currentColor",
+        "black": "#000000",
+        "white": "#ffffff",
+        "gray": {
+          "50": "#f9fafb",
+          "100": "#f3f4f6",
+          "200": "#e5e7eb",
+          "300": "#d1d5db",
+          "400": "#9ca3af",
+          "500": "#6b7280",
+          "600": "#4b5563",
+          "700": "#374151",
+          "800": "#1f2937",
+          "900": "#111827"
+        },
+        "red": {
+          "50": "#fef2f2",
+          "100": "#fee2e2",
+          "200": "#fecaca",
+          "300": "#fca5a5",
+          "400": "#f87171",
+          "500": "#ef4444",
+          "600": "#dc2626",
+          "700": "#b91c1c",
+          "800": "#991b1b",
+          "900": "#7f1d1d"
+        },
+        "yellow": {
+          "50": "#fffbeb",
+          "100": "#fef3c7",
+          "200": "#fde68a",
+          "300": "#fcd34d",
+          "400": "#fbbf24",
+          "500": "#f59e0b",
+          "600": "#d97706",
+          "700": "#b45309",
+          "800": "#92400e",
+          "900": "#78350f"
+        },
+        "green": {
+          "50": "#ecfdf5",
+          "100": "#d1fae5",
+          "200": "#a7f3d0",
+          "300": "#6ee7b7",
+          "400": "#34d399",
+          "500": "#10b981",
+          "600": "#059669",
+          "700": "#047857",
+          "800": "#065f46",
+          "900": "#064e3b"
+        },
+        "blue": {
+          "50": "#eff6ff",
+          "100": "#dbeafe",
+          "200": "#bfdbfe",
+          "300": "#93c5fd",
+          "400": "#60a5fa",
+          "500": "#3b82f6",
+          "600": "#2563eb",
+          "700": "#1d4ed8",
+          "800": "#1e40af",
+          "900": "#1e3a8a"
+        },
+        "indigo": {
+          "50": "#eef2ff",
+          "100": "#e0e7ff",
+          "200": "#c7d2fe",
+          "300": "#a5b4fc",
+          "400": "#818cf8",
+          "500": "#6366f1",
+          "600": "#4f46e5",
+          "700": "#4338ca",
+          "800": "#3730a3",
+          "900": "#312e81"
+        },
+        "purple": {
+          "50": "#f5f3ff",
+          "100": "#ede9fe",
+          "200": "#ddd6fe",
+          "300": "#c4b5fd",
+          "400": "#a78bfa",
+          "500": "#8b5cf6",
+          "600": "#7c3aed",
+          "700": "#6d28d9",
+          "800": "#5b21b6",
+          "900": "#4c1d95"
+        },
+        "pink": {
+          "50": "#fdf2f8",
+          "100": "#fce7f3",
+          "200": "#fbcfe8",
+          "300": "#f9a8d4",
+          "400": "#f472b6",
+          "500": "#ec4899",
+          "600": "#db2777",
+          "700": "#be185d",
+          "800": "#9d174d",
+          "900": "#831843"
+        },
+        "primary": {
+          "50": "var(--color-primary-50)",
+          "100": "var(--color-primary-100)",
+          "200": "var(--color-primary-200)",
+          "300": "var(--color-primary-300)",
+          "400": "var(--color-primary-400)",
+          "500": "var(--color-primary-500)",
+          "600": "var(--color-primary-600)",
+          "700": "var(--color-primary-700)",
+          "800": "var(--color-primary-800)",
+          "900": "var(--color-primary-900)",
+          "DEFAULT": "var(--color-primary)",
+          "focus": "var(--color-primary-focus)",
+          "content": "var(--color-primary-content)"
+        },
+        "secondary": {
+          "50": "var(--color-secondary-50)",
+          "100": "var(--color-secondary-100)",
+          "200": "var(--color-secondary-200)",
+          "300": "var(--color-secondary-300)",
+          "400": "var(--color-secondary-400)",
+          "500": "var(--color-secondary-500)",
+          "600": "var(--color-secondary-600)",
+          "700": "var(--color-secondary-700)",
+          "800": "var(--color-secondary-800)",
+          "900": "var(--color-secondary-900)",
+          "DEFAULT": "var(--color-secondary)",
+          "focus": "var(--color-secondary-focus)",
+          "content": "var(--color-secondary-content)"
+        },
+        "accent": {
+          "50": "var(--color-accent-50)",
+          "100": "var(--color-accent-100)",
+          "200": "var(--color-accent-200)",
+          "300": "var(--color-accent-300)",
+          "400": "var(--color-accent-400)",
+          "500": "var(--color-accent-500)",
+          "600": "var(--color-accent-600)",
+          "700": "var(--color-accent-700)",
+          "800": "var(--color-accent-800)",
+          "900": "var(--color-accent-900)",
+          "DEFAULT": "var(--color-accent)",
+          "focus": "var(--color-accent-focus)",
+          "content": "var(--color-accent-content)"
+        },
+        "neutral": {
+          "50": "var(--color-neutral-50)",
+          "100": "var(--color-neutral-100)",
+          "200": "var(--color-neutral-200)",
+          "300": "var(--color-neutral-300)",
+          "400": "var(--color-neutral-400)",
+          "500": "var(--color-neutral-500)",
+          "600": "var(--color-neutral-600)",
+          "700": "var(--color-neutral-700)",
+          "800": "var(--color-neutral-800)",
+          "900": "var(--color-neutral-900)",
+          "DEFAULT": "var(--color-neutral)",
+          "focus": "var(--color-neutral-focus)",
+          "content": "var(--color-neutral-content)"
+        },
+        "info": {
+          "50": "var(--color-info-50)",
+          "100": "var(--color-info-100)",
+          "200": "var(--color-info-200)",
+          "300": "var(--color-info-300)",
+          "400": "var(--color-info-400)",
+          "500": "var(--color-info-500)",
+          "600": "var(--color-info-600)",
+          "700": "var(--color-info-700)",
+          "800": "var(--color-info-800)",
+          "900": "var(--color-info-900)",
+          "DEFAULT": "var(--color-info)",
+          "focus": "var(--color-info-focus)",
+          "content": "var(--color-info-content)"
+        },
+        "success": {
+          "50": "var(--color-success-50)",
+          "100": "var(--color-success-100)",
+          "200": "var(--color-success-200)",
+          "300": "var(--color-success-300)",
+          "400": "var(--color-success-400)",
+          "500": "var(--color-success-500)",
+          "600": "var(--color-success-600)",
+          "700": "var(--color-success-700)",
+          "800": "var(--color-success-800)",
+          "900": "var(--color-success-900)",
+          "DEFAULT": "var(--color-success)",
+          "focus": "var(--color-success-focus)",
+          "content": "var(--color-success-content)"
+        },
+        "warning": {
+          "50": "var(--color-warning-50)",
+          "100": "var(--color-warning-100)",
+          "200": "var(--color-warning-200)",
+          "300": "var(--color-warning-300)",
+          "400": "var(--color-warning-400)",
+          "500": "var(--color-warning-500)",
+          "600": "var(--color-warning-600)",
+          "700": "var(--color-warning-700)",
+          "800": "var(--color-warning-800)",
+          "900": "var(--color-warning-900)",
+          "DEFAULT": "var(--color-warning)",
+          "focus": "var(--color-warning-focus)",
+          "content": "var(--color-warning-content)"
+        },
+        "error": {
+          "50": "var(--color-error-50)",
+          "100": "var(--color-error-100)",
+          "200": "var(--color-error-200)",
+          "300": "var(--color-error-300)",
+          "400": "var(--color-error-400)",
+          "500": "var(--color-error-500)",
+          "600": "var(--color-error-600)",
+          "700": "var(--color-error-700)",
+          "800": "var(--color-error-800)",
+          "900": "var(--color-error-900)",
+          "DEFAULT": "var(--color-error)",
+          "focus": "var(--color-error-focus)",
+          "content": "var(--color-error-content)"
+        },
+        "danger": {
+          "50": "var(--color-error-50)",
+          "100": "var(--color-error-100)",
+          "200": "var(--color-error-200)",
+          "300": "var(--color-error-300)",
+          "400": "var(--color-error-400)",
+          "500": "var(--color-error-500)",
+          "600": "var(--color-error-600)",
+          "700": "var(--color-error-700)",
+          "800": "var(--color-error-800)",
+          "900": "var(--color-error-900)",
+          "DEFAULT": "var(--color-error)",
+          "focus": "var(--color-error-focus)",
+          "content": "var(--color-error-content)"
+        },
+        "failure": {
+          "50": "var(--color-error-50)",
+          "100": "var(--color-error-100)",
+          "200": "var(--color-error-200)",
+          "300": "var(--color-error-300)",
+          "400": "var(--color-error-400)",
+          "500": "var(--color-error-500)",
+          "600": "var(--color-error-600)",
+          "700": "var(--color-error-700)",
+          "800": "var(--color-error-800)",
+          "900": "var(--color-error-900)",
+          "DEFAULT": "var(--color-error)",
+          "focus": "var(--color-error-focus)",
+          "content": "var(--color-error-content)"
+        }
+      },
+      "fontFamily": {}
+    }
+  },
+  "variants": {
+    "extend": {
+      "backgroundColor": [
+        "active",
+        "group-hover"
+      ],
+      "textColor": [
+        "active",
+        "group-hover"
+      ]
+    }
+  },
+  "plugins": []
+};</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+
+              <body class="h-full text-base-content">
+                <header id="header" class="bg-white border-b border-neutral-200 px-6 py-4">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center space-x-4">
+      <h1 class="text-2xl text-neutral-900">Import Smart Contract</h1>
+      <div class="text-sm text-neutral-500">Contract ID: IMP-2025-0001</div>
+    </div>
+    <div class="flex items-center space-x-3">
+      <button class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-save mr-2"></i>Save Draft
+      </button>
+      <button class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-eye mr-2"></i>Preview
+      </button>
+      <button class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-paper-plane mr-2"></i>Send to Buyer
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main-content" class="max-w-6xl mx-auto px-6 py-8">
+  <!-- Basic Contract Info -->
+  <section id="basic-info" class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+    <h2 class="text-xl text-neutral-900 mb-6">Basic Contract Information</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Contract Type *</label>
+        <div class="relative">
+          <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+            <option>Import</option>
+            <option>Export</option>
+            <option>Clearing</option>
+            <option>Shipping</option>
+            <option>Goods Supply</option>
+            <option>Services</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-neutral-400"></i>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">GSTIN / GST Number *</label>
+        <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500" placeholder="Enter GST Number">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Firm Name</label>
+        <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md bg-neutral-50" placeholder="Auto-fetched from GST" readonly="">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">GST State</label>
+        <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md bg-neutral-50" placeholder="Auto-fetched from GST" readonly="">
+      </div>
+    </div>
+    
+    <div class="mt-6">
+      <h3 class="text-lg text-neutral-900 mb-4">Supplier Contact</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-neutral-700 mb-2">Name</label>
+          <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+        </div>
+        <div>
+          <label class="block text-sm text-neutral-700 mb-2">Email</label>
+          <input type="email" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+        </div>
+        <div>
+          <label class="block text-sm text-neutral-700 mb-2">Phone</label>
+          <input type="tel" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Item Details -->
+  <section id="item-details" class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl text-neutral-900">Item Details</h2>
+      <button onclick="addItem()" class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-plus mr-2"></i>Add Item
+      </button>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-neutral-200">
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Item Name </th>
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Origin </th>
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Length </th>
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Grade </th>
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Qty (CBM) </th>
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Rate (USD) </th>
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Amount (USD)</th>
+            <th class="text-left py-3 px-2 text-sm text-neutral-700">Action</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody">
+          <tr class="border-b border-neutral-100">
+            <td class="py-3 px-2">
+              <div class="relative">
+                <select class="w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500">
+                  <option>Pine Wood</option>
+                  <option>Hardwood</option>
+                  <option>Teak Wood</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+              </div>
+            </td>
+            <td class="py-3 px-2">
+              <div class="relative">
+                <select class="w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500">
+                  <option>Uruguay</option>
+                  <option>New Zealand</option>
+                  <option>Australia</option>
+                  <option>Southern Yellow Pine (SYP)</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+              </div>
+            </td>
+            <td class="py-3 px-2">
+              <div class="relative">
+                <select class="w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500">
+                  <option>6.00 Mtr.</option>
+                  <option>5.40 Mtr.</option>
+                  <option>4.80 Mtr.</option>
+                  <option>3.60 Mtr.</option>
+                  <option>3.00 Mtr.</option>
+                  <option>12.00 Mtr.</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+              </div>
+            </td>
+            <td class="py-3 px-2">
+              <div class="relative">
+                <select class="w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500">
+                  <option>Grade A-40</option>
+                  <option>Grade A</option>
+                  <option>Grade K</option>
+                  <option>Grade KI</option>
+                  <option>Grade KIS</option>
+                  <option>Others</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+              </div>
+            </td>
+            <td class="py-3 px-2">
+              <input type="number" class="qty-input w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500" placeholder="0" oninput="calculateAmount(this)">
+            </td>
+            <td class="py-3 px-2">
+              <input type="number" class="rate-input w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500" placeholder="0.00" step="0.01" oninput="calculateAmount(this)">
+            </td>
+            <td class="py-3 px-2">
+              <input type="text" class="amount-display w-full px-2 py-1 border border-neutral-300 rounded text-sm bg-neutral-50" readonly="" value="0.00">
+            </td>
+            <td class="py-3 px-2">
+              <button onclick="removeItem(this)" class="text-[#F05134] hover:text-white hover:bg-[#F05134] p-1 rounded transition-colors">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="mt-4 flex justify-end">
+      <div class="text-lg text-neutral-900">
+        Total Amount (USD): <span id="total-amount" class="text-neutral-600">$0.00</span>
+      </div>
+    </div>
+    
+    <div class="mt-4">
+      <label class="block text-sm text-neutral-700 mb-2">Amount in Words</label>
+      <input type="text" id="amount-words" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500" placeholder="Auto-generated" readonly="">
+    </div>
+  </section>
+
+  <!-- Shipping & Payment Terms -->
+  <section id="shipping-payment" class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+    <h2 class="text-xl text-neutral-900 mb-6">Shipping &amp; Payment Terms</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Shipping Terms (Incoterms) *</label>
+        <div class="relative">
+          <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+            <option>CIF</option>
+            <option>CFR</option>
+            <option>CNF</option>
+            <option>FOB</option>
+            <option>EXW</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-neutral-400"></i>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Payment Terms *</label>
+        <div class="relative">
+          <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+            <option>Letter of Credit (L/C)</option>
+            <option>Document against Payment (D/P)</option>
+            <option>Document against Acceptance (D/A)</option>
+            <option>Wire Transfer</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-neutral-400"></i>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Payment Period</label>
+        <div class="relative">
+          <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+            <option>90 Days</option>
+            <option>120 Days</option>
+            <option>150 Days</option>
+            <option>180 Days</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-neutral-400"></i>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Payment Period From</label>
+        <div class="relative">
+          <select id="payment-period-from" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500" onchange="handlePaymentPeriodFromChange(this)">
+            <option value="">Select Reference Date</option>
+            <option value="invoice">From Date of Invoice</option>
+            <option value="bill-of-lading">Date Of Bill Of Lading</option>
+            <option value="negotiation">Date of Negotiation</option>
+            <option value="acceptance">Date of Acceptance</option>
+            <option value="contract-sign">Date of Sign of the contract</option>
+            <option value="others">Others</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-neutral-400"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dates -->
+  <section id="dates" class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+    <h2 class="text-xl text-neutral-900 mb-6">Important Dates</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Invoice Date *</label>
+        <input type="date" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Date of Negotiation</label>
+        <input type="date" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Latest Date of Shipment *</label>
+        <input type="date" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Date of Acceptance</label>
+        <input type="date" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Date of Bill of Lading (B/L)</label>
+        <input type="date" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Expiry Date of LC</label>
+        <input type="date" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+    </div>
+    
+    <div class="mt-6">
+      <label class="block text-sm text-neutral-700 mb-2">Expiry Place (LC)</label>
+      <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500" placeholder="Enter expiry place">
+    </div>
+  </section>
+
+  <!-- Documents & Presentation -->
+  <section id="documents" class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+    <h2 class="text-xl text-neutral-900 mb-6">Documents &amp; Presentation</h2>
+    
+    <div class="mb-6">
+      <label class="block text-sm text-neutral-700 mb-3">Documents of Presentation</label>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <label class="flex items-center">
+          <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">Commercial Invoice</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">Packing List</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">Bill of Lading</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">Certificate of Origin</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">Insurance Certificate</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">Phytosanitary Certificate</span>
+        </label>
+      </div>
+      <div class="mt-3">
+        <label class="flex items-center">
+          <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">Other (specify):</span>
+        </label>
+        <input type="text" class="mt-2 w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500" placeholder="Specify other documents">
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-sm text-neutral-700 mb-3">Presentation Deadline</label>
+      <div class="space-y-2">
+        <label class="flex items-center">
+          <input type="radio" name="presentation_deadline" class="mr-2 text-neutral-600 focus:ring-neutral-500" checked="">
+          <span class="text-sm text-neutral-700">21 days from date of LSD (Latest Shipment Date)</span>
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="presentation_deadline" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">15 days from LSD</span>
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="presentation_deadline" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+          <span class="text-sm text-neutral-700">12 days from LSD</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bank Details -->
+  <section id="bank-details" class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+    <h2 class="text-xl text-neutral-900 mb-6">Advising Bank Details</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Advising Bank Name</label>
+        <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Advising Bank City</label>
+        <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Advising Bank PIN / Zip</label>
+        <input type="text" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm text-neutral-700 mb-2">Advising Bank Country</label>
+        <div class="relative">
+          <select class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500">
+            <option>Select Country</option>
+            <option>India</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+            <option>Singapore</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-neutral-400"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Terms & Conditions -->
+  <section id="terms-conditions" class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+    <h2 class="text-xl text-neutral-900 mb-6">Terms &amp; Conditions</h2>
+    
+    <div class="border-b border-neutral-200">
+      <nav class="-mb-px flex space-x-8">
+        <button onclick="showTab('general')" id="tab-general" class="py-2 px-1 border-b-2 border-neutral-500 text-neutral-600 text-sm">
+          General Terms
+        </button>
+        <button onclick="showTab('shipping')" id="tab-shipping" class="py-2 px-1 border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 text-sm">
+          Shipping Terms
+        </button>
+        <button onclick="showTab('payment')" id="tab-payment" class="py-2 px-1 border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 text-sm">
+          Payment Terms
+        </button>
+        <button onclick="showTab('delivery')" id="tab-delivery" class="py-2 px-1 border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 text-sm">
+          Delivery Terms
+        </button>
+        <button onclick="showTab('dispute')" id="tab-dispute" class="py-2 px-1 border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 text-sm">
+          Dispute Resolution
+        </button>
+        <button onclick="showTab('others')" id="tab-others" class="py-2 px-1 border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 text-sm">
+          Other Terms
+        </button>
+      </nav>
+    </div>
+    
+    <div class="mt-6">
+      <!-- General Terms Tab -->
+      <div id="content-general" class="tab-content">
+        <div class="min-h-[200px] p-4 border border-neutral-300 rounded-md">
+          <textarea class="w-full h-48 resize-none border-none outline-none" placeholder="This contract shall be valid between two parties.
+Any modifications shall be made in writing and with mutual consent.
+Relevant Indian/International laws shall apply.
+Tax/Duty responsibilities of supplier/buyer shall be clearly specified."></textarea>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+            <span class="text-sm text-neutral-700">I accept these terms</span>
+          </label>
+          <span class="text-xs text-neutral-500">Last modified: 2025-01-27 10:30 AM</span>
+        </div>
+      </div>
+
+      <!-- Shipping Terms Tab -->
+      <div id="content-shipping" class="tab-content hidden">
+        <div class="min-h-[200px] p-4 border border-neutral-300 rounded-md">
+          <textarea class="w-full h-48 resize-none border-none outline-none" placeholder="Risk and insurance responsibility determined according to shipping terms (CIF/CFR/CNF).
+Delivery port/port of discharge shall be specified.
+Penalty/conditions for late shipment."></textarea>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+            <span class="text-sm text-neutral-700">I accept these terms</span>
+          </label>
+          <span class="text-xs text-neutral-500">Last modified: 2025-01-27 10:30 AM</span>
+        </div>
+      </div>
+
+      <!-- Payment Terms Tab -->
+      <div id="content-payment" class="tab-content hidden">
+        <div class="min-h-[200px] p-4 border border-neutral-300 rounded-md">
+          <textarea class="w-full h-48 resize-none border-none outline-none" placeholder="L/C or D/P rules; payment only upon accuracy of documents.
+Document presentation period and banking procedures.
+Interest on late payment (if applicable)."></textarea>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+            <span class="text-sm text-neutral-700">I accept these terms</span>
+          </label>
+          <span class="text-xs text-neutral-500">Last modified: 2025-01-27 10:30 AM</span>
+        </div>
+      </div>
+
+      <!-- Delivery Terms Tab -->
+      <div id="content-delivery" class="tab-content hidden">
+        <div class="min-h-[200px] p-4 border border-neutral-300 rounded-md">
+          <textarea class="w-full h-48 resize-none border-none outline-none" placeholder="Packing specifications, supply window, partial deliveries terms.
+Inspection and rejected shipment procedures."></textarea>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+            <span class="text-sm text-neutral-700">I accept these terms</span>
+          </label>
+          <span class="text-xs text-neutral-500">Last modified: 2025-01-27 10:30 AM</span>
+        </div>
+      </div>
+
+      <!-- Dispute Resolution Tab -->
+      <div id="content-dispute" class="tab-content hidden">
+        <div class="min-h-[200px] p-4 border border-neutral-300 rounded-md">
+          <textarea class="w-full h-48 resize-none border-none outline-none" placeholder="In case of disputes, first attempt negotiation, if unresolved then arbitration [location/rules] shall apply.
+Time limits and expert panel provisions."></textarea>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+            <span class="text-sm text-neutral-700">I accept these terms</span>
+          </label>
+          <span class="text-xs text-neutral-500">Last modified: 2025-01-27 10:30 AM</span>
+        </div>
+      </div>
+
+      <!-- Others Tab -->
+      <div id="content-others" class="tab-content hidden">
+        <div class="min-h-[200px] p-4 border border-neutral-300 rounded-md">
+          <textarea class="w-full h-48 resize-none border-none outline-none" placeholder="Force Majeure clause.
+Confidentiality, IP policies.
+Cancellations and termination clauses."></textarea>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" class="mr-2 text-neutral-600 focus:ring-neutral-500">
+            <span class="text-sm text-neutral-700">I accept these terms</span>
+          </label>
+          <span class="text-xs text-neutral-500">Last modified: 2025-01-27 10:30 AM</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Action Buttons -->
+  <section id="actions" class="bg-white rounded-lg border border-neutral-200 p-6">
+    <div class="flex flex-wrap gap-4 justify-center">
+      <button class="px-6 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-save mr-2"></i>Save Draft
+      </button>
+      <button class="px-6 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-eye mr-2"></i>Preview Contract
+      </button>
+      <button class="px-6 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-paper-plane mr-2"></i>Send to Buyer
+      </button>
+      <button class="px-6 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+        <i class="fa-solid fa-print mr-2"></i>Print / Export
+      </button>
+    </div>
+  </section>
+</main>
+
+<!-- Preview Modal -->
+<div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl text-neutral-900">Contract Preview</h3>
+        <button onclick="closePreview()" class="text-neutral-400 hover:text-neutral-600">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="bg-neutral-50 p-6 rounded-lg">
+        <div class="text-center mb-6">
+          <h2 class="text-2xl text-neutral-900 mb-2">Import Contract / आयात अनुबंध</h2>
+          <p class="text-neutral-600">Contract ID: IMP-2025-0001</p>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="bg-white p-4 rounded border">
+            <h4 class="text-lg text-neutral-900 mb-2">Contract Information</h4>
+            <p class="text-sm text-neutral-600">Contract Type: Import</p>
+            <p class="text-sm text-neutral-600">GSTIN: [GST Number]</p>
+            <p class="text-sm text-neutral-600">Total Amount: $0.00</p>
+          </div>
+          
+          <div class="bg-white p-4 rounded border">
+            <h4 class="text-lg text-neutral-900 mb-2">Terms &amp; Conditions</h4>
+            <p class="text-sm text-neutral-600">All terms and conditions as specified in the contract tabs.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-end space-x-3 mt-6">
+        <button onclick="closePreview()" class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+          Close
+        </button>
+        <button class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+          <i class="fa-solid fa-download mr-2"></i>Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Send to Buyer Modal -->
+<div id="send-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg w-full max-w-md mx-4">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl text-neutral-900">Buyers को भेजें</h3>
+        <button onclick="closeSendModal()" class="text-neutral-400 hover:text-neutral-600">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-neutral-700 mb-2">Buyer Email</label>
+          <input type="email" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500" placeholder="buyer@example.com">
+        </div>
+        
+        <div>
+          <label class="block text-sm text-neutral-700 mb-2">Buyer Phone (Optional)</label>
+          <input type="tel" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500" placeholder="+91 9876543210">
+        </div>
+        
+        <div>
+          <label class="block text-sm text-neutral-700 mb-2">Message (Optional)</label>
+          <textarea class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 h-24" placeholder="कृपया एक संक्षिप्त संदेश लिखें (वैकल्पिक)"></textarea>
+        </div>
+      </div>
+      
+      <div class="flex justify-end space-x-3 mt-6">
+        <button onclick="closeSendModal()" class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+          Cancel
+        </button>
+        <button onclick="sendToBuyer()" class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Period From Others Modal -->
+<div id="payment-period-others-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg w-full max-w-md mx-4">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl text-neutral-900">Payment Period From - Others</h3>
+        <button onclick="closePaymentPeriodOthersModal()" class="text-neutral-400 hover:text-neutral-600">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-neutral-700 mb-2">Specify Payment Period Reference</label>
+          <textarea id="payment-period-others-text" class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 h-24" placeholder="Enter custom payment period reference date..."></textarea>
+        </div>
+      </div>
+      
+      <div class="flex justify-end space-x-3 mt-6">
+        <button onclick="closePaymentPeriodOthersModal()" class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+          Cancel
+        </button>
+        <button onclick="savePaymentPeriodOthers()" class="px-4 py-2 bg-[#F05134] text-white border border-[#F05134] rounded-md hover:bg-white hover:text-[#F05134] transition-colors">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const woodData = {
+    "Pine Wood": {
+      origin: ["Uruguay", "New Zealand", "Australia", "Southern Yellow Pine (SYP)"],
+      length: ["6.00 Mtr.", "5.40 Mtr.", "4.80 Mtr.", "3.60 Mtr.", "3.00 Mtr.", "12.00 Mtr."],
+      subCategory: []
+    },
+    "Hardwood": {
+      origin: ["Malaysian", "Indonesia"],
+      length: ["6.00 Mtr.", "5.40 Mtr.", "14 Mtr.", "16 Mtr & up"],
+      subCategory: ["Marenti", "MLH", "Curing", "Red Sinker", "Red Super", "Red Normal", "Yellow Sinker DL"]
+    },
+    "Teak Wood": {
+      origin: ["Ghana", "Togo", "Benin", "Ecuador", "Colombia", "Guatemala", "Panama", "Brasil", "Costarica"],
+      length: ["3.5 Mtr", "7 Mtr & Up"],
+      subCategory: []
+    }
+  };
+  
+  function addItem() {
+    const tbody = document.getElementById('items-tbody');
+    const newRow = document.createElement('tr');
+    newRow.className = 'border-b border-neutral-100';
+  
+    newRow.innerHTML = `
+      <td class="py-3 px-2">
+        <div class="relative">
+          <select class="item-name-select w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500" onchange="updateRowOptions(this)">
+            <option>Pine Wood</option>
+            <option>Hardwood</option>
+            <option>Teak Wood</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+        </div>
+      </td>
+      <td class="py-3 px-2">
+        <div class="relative">
+          <select class="origin-select w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500"></select>
+          <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+        </div>
+      </td>
+      <td class="py-3 px-2">
+        <div class="relative">
+          <select class="length-select w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500"></select>
+          <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+        </div>
+      </td>
+      <td class="py-3 px-2">
+        <div class="relative">
+          <select class="sub-category-select w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500"></select>
+          <i class="fa-solid fa-chevron-down absolute right-2 top-2 text-neutral-400 text-xs"></i>
+        </div>
+      </td>
+      <td class="py-3 px-2">
+        <input type="number" class="qty-input w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500" placeholder="0" oninput="calculateAmount(this)">
+      </td>
+      <td class="py-3 px-2">
+        <input type="number" class="rate-input w-full px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500" placeholder="0.00" step="0.01" oninput="calculateAmount(this)">
+      </td>
+      <td class="py-3 px-2">
+        <input type="text" class="amount-display w-full px-2 py-1 border border-neutral-300 rounded text-sm bg-neutral-50" readonly value="0.00">
+      </td>
+      <td class="py-3 px-2">
+        <button onclick="removeItem(this)" class="text-[#F05134] hover:text-white hover:bg-[#F05134] p-1 rounded transition-colors">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </td>
+    `;
+  
+    tbody.appendChild(newRow);
+  
+    // Initialize the row options
+    const select = newRow.querySelector('.item-name-select');
+    updateRowOptions(select);
+  }
+  
+  function updateRowOptions(itemSelect) {
+    const row = itemSelect.closest('tr');
+    const originSelect = row.querySelector('.origin-select');
+    const lengthSelect = row.querySelector('.length-select');
+    const subCategorySelect = row.querySelector('.sub-category-select');
+    const selectedWood = itemSelect.value;
+  
+    // Update Origin
+    originSelect.innerHTML = '';
+    woodData[selectedWood].origin.forEach(origin => {
+      const option = document.createElement('option');
+      option.value = origin;
+      option.textContent = origin;
+      originSelect.appendChild(option);
+    });
+  
+    // Update Length
+    lengthSelect.innerHTML = '';
+    woodData[selectedWood].length.forEach(len => {
+      const option = document.createElement('option');
+      option.value = len;
+      option.textContent = len;
+      lengthSelect.appendChild(option);
+    });
+  
+    // Update Sub-Category
+    subCategorySelect.innerHTML = '';
+    if (woodData[selectedWood].subCategory.length > 0) {
+      woodData[selectedWood].subCategory.forEach(sub => {
+        const option = document.createElement('option');
+        option.value = sub;
+        option.textContent = sub;
+        subCategorySelect.appendChild(option);
+      });
+    } else {
+      const option = document.createElement('option');
+      option.value = '-';
+      option.textContent = '-';
+      subCategorySelect.appendChild(option);
+    }
+  }
+  
+  // Initialize first row on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const firstRowSelect = document.querySelector('#items-tbody tr .item-name-select');
+    if (firstRowSelect) updateRowOptions(firstRowSelect);
+  });
+  
+  // Existing calculation and remove functions
+  function calculateAmount(input) {
+    const row = input.closest('tr');
+    const qtyInput = row.querySelector('.qty-input');
+    const rateInput = row.querySelector('.rate-input');
+    const amountDisplay = row.querySelector('.amount-display');
+    
+    const qty = parseFloat(qtyInput.value) || 0;
+    const rate = parseFloat(rateInput.value) || 0;
+    amountDisplay.value = (qty * rate).toFixed(2);
+    
+    calculateTotal();
+  }
+  
+  function removeItem(button) {
+    const row = button.closest('tr');
+    row.remove();
+    calculateTotal();
+  }
+  
+  function calculateTotal() {
+    const amountDisplays = document.querySelectorAll('.amount-display');
+    let total = 0;
+    amountDisplays.forEach(display => total += parseFloat(display.value) || 0);
+    document.getElementById('total-amount').textContent = `$${total.toFixed(2)}`;
+  }  
+
+function removeItem(button) {
+  const row = button.closest('tr');
+  row.remove();
+  calculateTotal();
+}
+
+function calculateAmount(input) {
+  const row = input.closest('tr');
+  const qtyInput = row.querySelector('.qty-input');
+  const rateInput = row.querySelector('.rate-input');
+  const amountDisplay = row.querySelector('.amount-display');
+  
+  const qty = parseFloat(qtyInput.value) || 0;
+  const rate = parseFloat(rateInput.value) || 0;
+  const amount = qty * rate;
+  
+  amountDisplay.value = amount.toFixed(2);
+  
+  // Calculate total
+  calculateTotal();
+}
+
+function calculateTotal() {
+  const amountDisplays = document.querySelectorAll('.amount-display');
+  let total = 0;
+  
+  amountDisplays.forEach(display => {
+    total += parseFloat(display.value) || 0;
+  });
+  
+  document.getElementById('total-amount').textContent = `$${total.toFixed(2)}`;
+  
+  // Convert total amount to words
+  const words = numberToWords(total);
+  document.getElementById('amount-words').value = words + ' USD';
+}
+
+function numberToWords(num) {
+  if (num === 0) return "Zero";
+  if (num < 0) return "Negative " + numberToWords(-num);
+  
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const thousands = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
+  
+  function convertHundreds(n) {
+    let result = '';
+    
+    if (n >= 100) {
+      result += ones[Math.floor(n / 100)] + ' Hundred ';
+      n %= 100;
+    }
+    
+    if (n >= 20) {
+      result += tens[Math.floor(n / 10)] + ' ';
+      n %= 10;
+    } else if (n >= 10) {
+      result += teens[n - 10] + ' ';
+      return result.trim();
+    }
+    
+    if (n > 0) {
+      result += ones[n] + ' ';
+    }
+    
+    return result.trim();
+  }
+  
+  // Handle decimal part
+  const parts = num.toString().split('.');
+  let integerPart = parseInt(parts[0]);
+  const decimalPart = parts[1] ? parseInt(parts[1].padEnd(2, '0').substring(0, 2)) : 0;
+  
+  let result = '';
+  let groupIndex = 0;
+  
+  if (integerPart === 0) {
+    result = 'Zero';
+  } else {
+    while (integerPart > 0) {
+      const group = integerPart % 1000;
+      if (group !== 0) {
+        const groupWords = convertHundreds(group);
+        result = groupWords + (thousands[groupIndex] ? ' ' + thousands[groupIndex] : '') + (result ? ' ' + result : '');
+      }
+      integerPart = Math.floor(integerPart / 1000);
+      groupIndex++;
+    }
+  }
+  
+  // Add decimal part if exists
+  if (decimalPart > 0) {
+    result += ' and ' + convertHundreds(decimalPart) + ' Cents';
+  }
+  
+  return result.trim();
+}
+
+function showTab(tabName) {
+  // Hide all tab contents
+  const contents = document.querySelectorAll('.tab-content');
+  contents.forEach(content => content.classList.add('hidden'));
+  
+  // Remove active class from all tabs
+  const tabs = document.querySelectorAll('[id^="tab-"]');
+  tabs.forEach(tab => {
+    tab.classList.remove('border-neutral-500', 'text-neutral-600');
+    tab.classList.add('border-transparent', 'text-neutral-500');
+  });
+  
+  // Show selected tab content
+  document.getElementById(`content-${tabName}`).classList.remove('hidden');
+  
+  // Add active class to selected tab
+  const activeTab = document.getElementById(`tab-${tabName}`);
+  activeTab.classList.remove('border-transparent', 'text-neutral-500');
+  activeTab.classList.add('border-neutral-500', 'text-neutral-600');
+}
+
+function openPreview() {
+  document.getElementById('preview-modal').classList.remove('hidden');
+}
+
+function closePreview() {
+  document.getElementById('preview-modal').classList.add('hidden');
+}
+
+function openSendModal() {
+  document.getElementById('send-modal').classList.remove('hidden');
+}
+
+function closeSendModal() {
+  document.getElementById('send-modal').classList.add('hidden');
+}
+
+function sendToBuyer() {
+  // Add send logic here
+  alert('Contract sent to buyer successfully!');
+  closeSendModal();
+}
+
+// Update header buttons
+document.querySelector('header button:nth-child(2)').onclick = openPreview;
+document.querySelector('header button:nth-child(3)').onclick = openSendModal;
+
+// Update action buttons
+document.querySelector('#actions button:nth-child(2)').onclick = openPreview;
+document.querySelector('#actions button:nth-child(3)').onclick = openSendModal;
+
+function handlePaymentPeriodFromChange(select) {
+  if (select.value === 'others') {
+    document.getElementById('payment-period-others-modal').classList.remove('hidden');
+  }
+}
+
+function closePaymentPeriodOthersModal() {
+  document.getElementById('payment-period-others-modal').classList.add('hidden');
+  // Reset select to empty if user cancels
+  document.getElementById('payment-period-from').value = '';
+}
+
+function savePaymentPeriodOthers() {
+  const customText = document.getElementById('payment-period-others-text').value.trim();
+  if (customText) {
+    // Create a new option with the custom text
+    const select = document.getElementById('payment-period-from');
+    
+    // Remove any existing "others" custom option
+    const existingCustom = select.querySelector('option[value="custom"]');
+    if (existingCustom) {
+      existingCustom.remove();
+    }
+    
+    // Add new custom option
+    const customOption = document.createElement('option');
+    customOption.value = 'custom';
+    customOption.textContent = customText;
+    customOption.selected = true;
+    
+    // Insert before the "Others" option
+    const othersOption = select.querySelector('option[value="others"]');
+    select.insertBefore(customOption, othersOption);
+    
+    // Close modal and clear textarea
+    document.getElementById('payment-period-others-text').value = '';
+    closePaymentPeriodOthersModal();
+  } else {
+    alert('Please enter a custom payment period reference.');
+  }
+}
+</script>
+
+<!-- Help Button -->
+<button id="help-button" class="fixed bottom-6 right-6 w-12 h-12 bg-[#F05134] text-white rounded-full shadow-lg hover:bg-white hover:text-[#F05134] border border-[#F05134] transition-colors flex items-center justify-center">
+  <i class="fa-solid fa-question"></i>
+</button>
+              
+            
+          </body></html>

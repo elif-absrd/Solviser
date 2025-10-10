@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -65,12 +65,34 @@ model User {
   isSuperAdmin                Boolean                      @default(false) @map("is_super_admin")
   createdAt                   DateTime                     @default(now()) @map("created_at")
   updatedAt                   DateTime                     @updatedAt @map("updated_at")
+  
+  // Existing relations
   auditLogs                   AuditLog[]
-  contracts                   Contract[]
   legalServiceProviderProfile LegalServiceProviderProfile?
   ownedOrganization           Organization?                @relation("OrganizationOwner")
   roles                       UserRole[]
   organization                Organization                 @relation("OrganizationUsers", fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Contract relations
+  createdContracts            Contract[]                   @relation("ContractCreator")
+  assignedContracts           Contract[]                   @relation("ContractAssignee")
+  
+  // Contract document relations
+  uploadedDocuments           ContractDocument[]           @relation("DocumentUploader")
+  verifiedDocuments           ContractDocument[]           @relation("DocumentVerifier")
+  
+  // Contract authorization relations
+  contractAuthorizations      ContractAuthorization[]
+  
+  // Contract risk assessment relations
+  riskAssessments             ContractRiskAssessment[]
+  
+  // Contract milestone relations
+  completedMilestones         ContractMilestone[]
+  
+  // Contract renewal relations
+  requestedRenewals           ContractRenewal[]            @relation("RenewalRequester")
+  approvedRenewals            ContractRenewal[]            @relation("RenewalApprover")
 
   @@map("users")
 }
@@ -183,52 +205,144 @@ model LegalServiceOffering {
 }
 
 model Contract {
-  id                     String       @id @default(uuid())
-  organizationId         String       @map("organization_id")
-  createdById            String       @map("created_by_id")
-  contractTitle          String       @map("contract_title")
-  contractType           String       @map("contract_type")
-  contractNumber         String?      @unique @map("contract_number")
+  id                     String              @id @default(uuid())
+  contractNumber         String?             @unique @map("contract_number")
+  
+  // Basic Information (Contract Builder & Create New)
+  contractTitle          String              @map("contract_title")
+  contractTitleHindi     String?             @map("contract_title_hindi")
+  contractType           String              @map("contract_type")
+  language               ContractLanguage    @default(ENGLISH)
   description            String?
-  buyerName              String       @map("buyer_name")
-  buyerGstNumber         String?      @map("buyer_gst_number")
-  buyerRegisteredAddress String?      @map("buyer_registered_address")
-  buyerContactPerson     String?      @map("buyer_contact_person")
-  buyerEmail             String?      @map("buyer_email")
-  buyerPhone             String?      @map("buyer_phone")
-  contractValue          Float        @map("contract_value")
-  currency               String       @default("INR")
-  paymentTerms           String?      @map("payment_terms")
-  advancePayment         Float?       @default(0) @map("advance_payment")
-  penaltyClause          String?      @map("penalty_clause")
-  startDate              DateTime     @map("start_date")
-  endDate                DateTime     @map("end_date")
-  renewalDate            DateTime?    @map("renewal_date")
-  noticePeriodDays       Int?         @default(30) @map("notice_period_days")
-  status                 String       @default("active")
-  riskScore              Int          @default(50) @map("risk_score")
-  riskFactors            String?      @map("risk_factors")
-  lastReviewDate         DateTime?    @map("last_review_date")
-  nextReviewDate         DateTime?    @map("next_review_date")
-  termsAndClauses        String?      @map("terms_and_clauses")
-  governingLaw           String?      @default("Indian Contract Act, 1872") @map("governing_law")
-  jurisdiction           String?      @default("India")
-  confidentialityClause  Boolean      @default(false) @map("confidentiality_clause")
-  forceMapjeure          Boolean      @default(false) @map("force_majeure")
-  industry               String       @default("General")
-  priority               String       @default("medium")
+  descriptionHindi       String?             @map("description_hindi")
+  status                 ContractStatus      @default(DRAFT)
+  
+  // Builder Workflow
+  builderStatus          BuilderStatus       @default(DRAFT) @map("builder_status")
+  currentStep            Int                 @default(1) @map("current_step")
+  
+  // Organization & Stakeholder Information
+  organizationId         String              @map("organization_id")
+  organization           Organization        @relation(fields: [organizationId], references: [id])
+  createdById            String              @map("created_by_id")
+  createdBy              User                @relation("ContractCreator", fields: [createdById], references: [id])
+  assignedToId           String?             @map("assigned_to_id")
+  assignedTo             User?               @relation("ContractAssignee", fields: [assignedToId], references: [id])
+  
+  // Buyer/Sender Information
+  buyerName              String              @map("buyer_name")
+  buyerGstNumber         String?             @map("buyer_gst_number")
+  buyerEmail             String?             @map("buyer_email")
+  buyerRegisteredAddress String?             @map("buyer_registered_address")
+  buyerContactPerson     String?             @map("buyer_contact_person")
+  buyerPhone             String?             @map("buyer_phone")
+  
+  // Supplier Information (for import contracts)
+  supplierName           String?             @map("supplier_name")
+  supplierEmail          String?             @map("supplier_email")
+  supplierPhone          String?             @map("supplier_phone")
+  
+  // Financial Information
+  contractValue          Float               @map("contract_value")
+  currency               String              @default("INR")
+  advancePayment         Float?              @default(0) @map("advance_payment")
+  
+  // Dates
+  startDate              DateTime            @map("start_date")
+  endDate                DateTime            @map("end_date")
+  renewalDate            DateTime?           @map("renewal_date")
+  
+  // Import Contract Specific Fields
+  isImportContract       Boolean             @default(false) @map("is_import_contract")
+  sharedContractId       String?             @map("shared_contract_id")
+  firmName               String?             @map("firm_name")
+  gstState               String?             @map("gst_state")
+  totalAmount            Float?              @map("total_amount")
+  amountInWords          String?             @map("amount_in_words")
+  
+  // Shipping & Payment Terms
+  shippingTerms          String?             @map("shipping_terms")
+  paymentTerms           String?             @map("payment_terms")
+  paymentPeriod          String?             @map("payment_period")
+  paymentPeriodFrom      String?             @map("payment_period_from")
+  
+  // Import Contract Dates
+  invoiceDate            DateTime?           @map("invoice_date")
+  negotiationDate        DateTime?           @map("negotiation_date")
+  latestShipmentDate     DateTime?           @map("latest_shipment_date")
+  acceptanceDate         DateTime?           @map("acceptance_date")
+  blDate                 DateTime?           @map("bl_date")
+  lcExpiryDate           DateTime?           @map("lc_expiry_date")
+  lcExpiryPlace          String?             @map("lc_expiry_place")
+  presentationDeadline   DateTime?           @map("presentation_deadline")
+  
+  // Banking Details
+  advisingBankName       String?             @map("advising_bank_name")
+  advisingBankCity       String?             @map("advising_bank_city")
+  advisingBankPin        String?             @map("advising_bank_pin")
+  advisingBankCountry    String?             @map("advising_bank_country")
+  
+  // Document Flags
+  hasCommercialInvoice   Boolean             @default(false) @map("has_commercial_invoice")
+  hasPackingList         Boolean             @default(false) @map("has_packing_list")
+  hasBillOfLanding       Boolean             @default(false) @map("has_bill_of_landing")
+  hasCertificateOfOrigin Boolean             @default(false) @map("has_certificate_of_origin")
+  hasInsuranceCertificate Boolean            @default(false) @map("has_insurance_certificate")
+  hasPhytosanitaryCertificate Boolean        @default(false) @map("has_phytosanitary_certificate")
+  documentsSkipped       Boolean             @default(false) @map("documents_skipped")
+  
+  // Terms & Conditions
+  generalTerms           String?             @map("general_terms")
+  generalTermsHindi      String?             @map("general_terms_hindi")
+  termsAndClauses        String?             @map("terms_and_clauses")
+  termsAndClausesHindi   String?             @map("terms_and_clauses_hindi")
+  disputeResolutionTerms String?             @map("dispute_resolution_terms")
+  agreementCheckbox      Boolean             @default(false) @map("agreement_checkbox")
+  penaltyClause          String?             @map("penalty_clause")
+  governingLaw           String?             @default("Indian Contract Act, 1872") @map("governing_law")
+  jurisdiction           String?             @default("India")
+  confidentialityClause  Boolean             @default(false) @map("confidentiality_clause")
+  forceMapjeure          Boolean             @default(false) @map("force_majeure")
+  
+  // Risk & Analytics
+  riskScore              Int                 @default(50) @map("risk_score")
+  riskFactors            String?             @map("risk_factors")
+  industry               String              @default("General")
+  riskLevel              RiskLevel?          @map("risk_level")
+  priority               String              @default("medium")
   tags                   String?
-  documentPath           String?      @map("document_path")
-  signedDocumentPath     String?      @map("signed_document_path")
-  isSigned               Boolean      @default(false) @map("is_signed")
-  signedDate             DateTime?    @map("signed_date")
-  lastModifiedById       String?      @map("last_modified_by_id")
+  
+  // Template relation
+  templateId             String?             @map("template_id")
+  template               ContractTemplate?   @relation(fields: [templateId], references: [id])
+  
+  // Document and file management
+  documentPath           String?             @map("document_path")
+  signedDocumentPath     String?             @map("signed_document_path")
+  isSigned               Boolean             @default(false) @map("is_signed")
+  signedDate             DateTime?           @map("signed_date")
+  
+  // Audit fields
+  noticePeriodDays       Int?                @default(30) @map("notice_period_days")
+  lastReviewDate         DateTime?           @map("last_review_date")
+  nextReviewDate         DateTime?           @map("next_review_date")
+  lastModifiedById       String?             @map("last_modified_by_id")
   notes                  String?
-  isArchived             Boolean      @default(false) @map("is_archived")
-  createdAt              DateTime     @default(now()) @map("created_at")
-  updatedAt              DateTime     @updatedAt @map("updated_at")
-  createdBy              User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isArchived             Boolean             @default(false) @map("is_archived")
+  createdAt              DateTime            @default(now()) @map("created_at")
+  updatedAt              DateTime            @updatedAt @map("updated_at")
+  
+  // Relations
+  items                  ContractItem[]
+  clauses                ContractClause[]
+  customFields           ContractCustomField[]
+  documents              ContractDocument[]
+  authorizations         ContractAuthorization[]
+  notifications          BuyerNotification[]
+  disputes               ContractDispute[]
+  renewals               ContractRenewal[]
+  milestones             ContractMilestone[]
+  riskAssessments        ContractRiskAssessment[]
 
   @@map("contracts")
 }
@@ -264,20 +378,443 @@ model ContractDropdownOption {
   @@map("contract_dropdown_options")
 }
 
+// Smart Contract Enums
+enum ContractLanguage {
+  ENGLISH
+  HINDI
+  BILINGUAL
+}
+
+enum ClauseType {
+  PAYMENT
+  LIQUIDATED_DAMAGES
+  ARBITRATION
+  DELIVERY
+  JURISDICTION
+  FORCE_MAJEURE
+  CONFIDENTIALITY
+  TERMINATION
+  CUSTOM
+}
+
+enum ClauseCategory {
+  PAYMENT_TERMS
+  LIQUIDATED_DAMAGES
+  ARBITRATION
+  DELIVERY_TERMS
+  JURISDICTION
+  FORCE_MAJEURE
+  QUALITY_STANDARDS
+  INSURANCE
+  WARRANTY
+  CUSTOM
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_REVIEW
+  UNDER_REVIEW
+  APPROVED
+  ACTIVE
+  AT_RISK
+  COMPLETED
+  EXPIRED
+  TERMINATED
+  RENEWED
+  DISPUTED
+}
+
+enum BuilderStatus {
+  DRAFT
+  IN_PROGRESS
+  REVIEW_PENDING
+  AUTHORIZED
+  FINALIZED
+}
+
+enum DocumentCategory {
+  CONTRACT_PDF
+  COMMERCIAL_INVOICE
+  PACKING_LIST
+  BILL_OF_LANDING
+  CERTIFICATE_OF_ORIGIN
+  INSURANCE_CERTIFICATE
+  PHYTOSANITARY_CERTIFICATE
+  OTHER_SPECIFIED
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  SELECT
+  TEXTAREA
+}
+
+enum AuthorizationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REQUIRES_CHANGES
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum NotificationType {
+  GENERAL
+  PAYMENT_REMINDER
+  CONTRACT_EXPIRY
+  URGENT
+  MILESTONE_DUE
+  RENEWAL_SUGGESTION
+}
+
+enum DisputeReason {
+  PAYMENT_DELAY
+  QUALITY_ISSUE
+  DELIVERY_DELAY
+  BREACH_OF_CONTRACT
+  DOCUMENTATION_ERROR
+  NON_COMPLIANCE
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_INVESTIGATION
+  RESOLVED
+  ESCALATED
+  CLOSED
+}
+
+enum RenewalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum MilestoneType {
+  PAYMENT_DUE
+  DELIVERY_DUE
+  RENEWAL_SUGGESTION
+  CONTRACT_EXPIRY
+  DOCUMENTATION_DUE
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+  CANCELLED
+}
+
+enum NotificationStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum AuthorizationType {
+  CREATION_APPROVAL
+  MODIFICATION_APPROVAL
+  SIGNATURE_APPROVAL
+  FINAL_APPROVAL
+  RENEWAL_APPROVAL
+}
+
+enum RenewalType {
+  AUTOMATIC
+  MANUAL
+  NEGOTIATED
+  EXTENSION
+}
+
+// Enhanced Contract Template for Template Library
 model ContractTemplate {
-  id            Int      @id @default(autoincrement())
-  name          String
-  type          String
-  generalTerms  String?
-  shippingTerms String?
-  paymentTerms  String?
-  deliveryTerms String?
-  disputeTerms  String?
-  otherTerms    String?
-  isDefault     Boolean  @default(false)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String              @id @default(uuid())
+  name              String
+  type              String
+  language          ContractLanguage    @default(ENGLISH)
+  category          String
+  description       String
+  descriptionHindi  String?
+  isStandard        Boolean             @default(false)
+  isActive          Boolean             @default(true)
+  rating            Float?
+  usageCount        Int                 @default(0)
+  tags              String?
+  
+  // Template content for different languages
+  generalTerms      String?
+  generalTermsHindi String?
+  shippingTerms     String?
+  shippingTermsHindi String?
+  paymentTerms      String?
+  paymentTermsHindi String?
+  deliveryTerms     String?
+  deliveryTermsHindi String?
+  
+  // Relations
+  preVettedClauses  PreVettedClause[]
+  contracts         Contract[]
+  
+  createdById       String?
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
 
   @@map("contract_templates")
+}
+
+// Pre-vetted Contract Clauses for Template Library
+model PreVettedClause {
+  id                String              @id @default(uuid())
+  type              ClauseType
+  category          ClauseCategory
+  title             String
+  titleHindi        String?
+  content           String
+  contentHindi      String?
+  language          ContractLanguage    @default(ENGLISH)
+  isRequired        Boolean             @default(false)
+  isEditable        Boolean             @default(true)
+  position          Int?
+  
+  // Template relation
+  templateId        String?             @map("template_id")
+  template          ContractTemplate?   @relation(fields: [templateId], references: [id])
+  
+  // Usage in contracts
+  contractClauses   ContractClause[]
+  
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@map("pre_vetted_clauses")
+}
+
+// Contract Items Model
+model ContractItem {
+  id                String    @id @default(uuid())
+  contractId        String    @map("contract_id")
+  itemName          String    @map("item_name")
+  itemNameHindi     String?   @map("item_name_hindi")
+  quantity          Int       @default(1)
+  unit              String?
+  unitPrice         Float     @map("unit_price")
+  totalPrice        Float     @map("total_price")
+  description       String?
+  descriptionHindi  String?   @map("description_hindi")
+  hsCode            String?   @map("hs_code")
+  category          String?
+  orderIndex        Int       @default(0) @map("order_index")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  contract          Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_items")
+}
+
+// Contract Clauses Model
+model ContractClause {
+  id                String              @id @default(uuid())
+  contractId        String              @map("contract_id")
+  title             String
+  titleHindi        String?             @map("title_hindi")
+  content           String
+  contentHindi      String?             @map("content_hindi")
+  clauseType        String              @map("clause_type")
+  orderIndex        Int                 @default(0) @map("order_index")
+  isCustom          Boolean             @default(true) @map("is_custom")
+  preVettedClauseId String?             @map("pre_vetted_clause_id")
+  preVettedClause   PreVettedClause?    @relation(fields: [preVettedClauseId], references: [id])
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  
+  contract          Contract            @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_clauses")
+}
+
+// Contract Custom Fields Model
+model ContractCustomField {
+  id                String      @id @default(uuid())
+  contractId        String      @map("contract_id")
+  fieldName         String      @map("field_name")
+  fieldNameHindi    String?     @map("field_name_hindi")
+  fieldType         String      @default("text") @map("field_type") // text, number, date, boolean, select
+  fieldValue        String      @map("field_value")
+  fieldOptions      String?     @map("field_options") // JSON string for select options
+  isRequired        Boolean     @default(false) @map("is_required")
+  orderIndex        Int         @default(0) @map("order_index")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  
+  contract          Contract    @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_custom_fields")
+}
+
+// Contract Documents Model
+model ContractDocument {
+  id                String      @id @default(uuid())
+  contractId        String      @map("contract_id")
+  documentName      String      @map("document_name")
+  documentType      String      @map("document_type")
+  filePath          String      @map("file_path")
+  fileSize          Int?        @map("file_size")
+  mimeType          String?     @map("mime_type")
+  uploadedById      String      @map("uploaded_by_id")
+  isRequired        Boolean     @default(false) @map("is_required")
+  isVerified        Boolean     @default(false) @map("is_verified")
+  verifiedById      String?     @map("verified_by_id")
+  verifiedAt        DateTime?   @map("verified_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  
+  contract          Contract    @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  uploadedBy        User        @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  verifiedBy        User?       @relation("DocumentVerifier", fields: [verifiedById], references: [id])
+
+  @@map("contract_documents")
+}
+
+// Contract Authorization Model (for stakeholder approval workflow)
+model ContractAuthorization {
+  id                String              @id @default(uuid())
+  contractId        String              @map("contract_id")
+  userId            String              @map("user_id")
+  authorizationType AuthorizationType   @map("authorization_type")
+  status            AuthorizationStatus @default(PENDING)
+  comments          String?
+  authorizedAt      DateTime?           @map("authorized_at")
+  dueDate           DateTime?           @map("due_date")
+  reminderSent      Boolean             @default(false) @map("reminder_sent")
+  orderIndex        Int                 @default(0) @map("order_index")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  
+  contract          Contract            @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  user              User                @relation(fields: [userId], references: [id])
+
+  @@map("contract_authorizations")
+}
+
+// Contract Risk Assessment Model
+model ContractRiskAssessment {
+  id                String      @id @default(uuid())
+  contractId        String      @map("contract_id")
+  assessmentType    String      @map("assessment_type") // automatic, manual, ml_based
+  overallRiskScore  Int         @map("overall_risk_score")
+  riskLevel         RiskLevel   @map("risk_level")
+  riskFactors       String      @map("risk_factors") // JSON string
+  financialRisk     Int         @default(50) @map("financial_risk")
+  operationalRisk   Int         @default(50) @map("operational_risk")
+  legalRisk         Int         @default(50) @map("legal_risk")
+  reputationalRisk  Int         @default(50) @map("reputational_risk")
+  recommendations   String?
+  assessedById      String?     @map("assessed_by_id")
+  assessedAt        DateTime    @default(now()) @map("assessed_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  
+  contract          Contract    @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  assessedBy        User?       @relation(fields: [assessedById], references: [id])
+
+  @@map("contract_risk_assessments")
+}
+
+// Contract Milestones Model
+model ContractMilestone {
+  id                String            @id @default(uuid())
+  contractId        String            @map("contract_id")
+  title             String
+  description       String?
+  dueDate           DateTime          @map("due_date")
+  status            MilestoneStatus   @default(PENDING)
+  deliverables      String?           // JSON string
+  paymentAmount     Float?            @map("payment_amount")
+  completedAt       DateTime?         @map("completed_at")
+  completedById     String?           @map("completed_by_id")
+  orderIndex        Int               @default(0) @map("order_index")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  
+  contract          Contract          @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  completedBy       User?             @relation(fields: [completedById], references: [id])
+
+  @@map("contract_milestones")
+}
+
+// Contract Renewal Model
+model ContractRenewal {
+  id                String          @id @default(uuid())
+  contractId        String          @map("contract_id")
+  renewalType       RenewalType     @map("renewal_type")
+  renewalTerms      String?         @map("renewal_terms")
+  newStartDate      DateTime        @map("new_start_date")
+  newEndDate        DateTime        @map("new_end_date")
+  newContractValue  Float?          @map("new_contract_value")
+  status            RenewalStatus   @default(PENDING)
+  requestedById     String          @map("requested_by_id")
+  approvedById      String?         @map("approved_by_id")
+  requestedAt       DateTime        @default(now()) @map("requested_at")
+  approvedAt        DateTime?       @map("approved_at")
+  notificationSent  Boolean         @default(false) @map("notification_sent")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  
+  contract          Contract        @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  requestedBy       User            @relation("RenewalRequester", fields: [requestedById], references: [id])
+  approvedBy        User?           @relation("RenewalApprover", fields: [approvedById], references: [id])
+
+  @@map("contract_renewals")
+}
+
+// Buyer Notification Model
+model BuyerNotification {
+  id                String              @id @default(uuid())
+  contractId        String              @map("contract_id")
+  buyerEmail        String              @map("buyer_email")
+  subject           String
+  message           String
+  notificationType  NotificationType    @map("notification_type")
+  status            NotificationStatus  @default(SENT)
+  sentAt            DateTime            @default(now()) @map("sent_at")
+  readAt            DateTime?           @map("read_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  
+  contract          Contract            @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("buyer_notifications")
+}
+
+// Contract Dispute Model
+model ContractDispute {
+  id                String          @id @default(uuid())
+  contractId        String          @map("contract_id")
+  reportedById      String?         @map("reported_by_id")
+  reason            DisputeReason   @map("reason")
+  description       String
+  status            DisputeStatus   @default(OPEN)
+  resolution        String?
+  resolvedAt        DateTime?       @map("resolved_at")
+  resolvedById      String?         @map("resolved_by_id")
+  escalationLevel   Int             @default(1) @map("escalation_level")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  
+  contract          Contract        @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_disputes")
 }

@@ -12,6 +12,7 @@ import StatCard from "./StatCard";
 import TemplateLibrary from "./TemplateLibrary";
 import ContractBuilder from "./ContractBuilder";
 import ContractStatusTracker from "./ContractStatusTracker";
+import PreviousContractsPage from "./PreviousContractsPage";
 import { DocumentIcon, CheckIcon, AlertCircleIcon, HandshakeIcon, ClockIcon } from "./icons";
 import api from '@/lib/api';
 import { RotateCcw } from "lucide-react";
@@ -32,7 +33,7 @@ interface ContractFilters {
   sortBy: string;
 }
 
-type ViewType = "dashboard" | "newContract" | "importContract" | "templateLibrary" | "contractBuilder" | "statusTracker";
+type ViewType = "dashboard" | "newContract" | "importContract" | "templateLibrary" | "contractBuilder" | "statusTracker" | "previousContracts";
 
 
 export default function SmartContractPage() {
@@ -114,6 +115,7 @@ export default function SmartContractPage() {
     setSelectedContractId(contractId);
     setCurrentView("statusTracker");
   };
+  const handlePreviousContracts = () => setCurrentView("previousContracts");
 
   if (currentView === "newContract") {
     return <AddNewContractPage onGoBack={() => {
@@ -141,10 +143,39 @@ export default function SmartContractPage() {
   if (currentView === "contractBuilder") {
     return <ContractBuilder 
       template={selectedTemplate}
-      onSave={(contract) => {
-        console.log('Contract saved:', contract);
-        setCurrentView("dashboard");
-        fetchStats(true);
+      onSave={async (contract) => {
+        try {
+          console.log('Saving contract:', contract);
+          
+          // Convert contract builder data to API format
+          const contractData = {
+            contractTitle: contract.title,
+            contractType: contract.type,
+            description: contract.basicInfo.description,
+            buyerName: contract.basicInfo.parties.party2.name,
+            buyerEmail: contract.basicInfo.parties.party2.email,
+            buyerPhone: '', // Not available in current contract builder
+            registeredAddress: contract.basicInfo.parties.party2.address,
+            gstNumber: contract.basicInfo.parties.party2.gstin,
+            contractValue: contract.basicInfo.contractValue,
+            currency: contract.basicInfo.currency,
+            startDate: contract.basicInfo.startDate,
+            endDate: contract.basicInfo.endDate,
+            termsAndClauses: contract.clauses.map(clause => `${clause.title}: ${clause.content}`).join('\n\n'),
+            industry: 'General',
+            priority: contract.status === 'ready' ? 'high' : 'medium',
+            notes: `Contract created via Contract Builder on ${new Date().toLocaleDateString()}`
+          };
+          
+          const response = await api.post('/contracts', contractData);
+          console.log('Contract saved successfully:', response.data);
+          alert(contract.status === 'ready' ? 'Contract finalized successfully!' : 'Contract draft saved successfully!');
+          setCurrentView("dashboard");
+          fetchStats(true);
+        } catch (error: any) {
+          console.error('Failed to save contract:', error);
+          alert('Failed to save contract: ' + (error.response?.data?.error || error.message));
+        }
       }}
       onGoBack={() => setCurrentView("dashboard")}
     />;
@@ -153,6 +184,12 @@ export default function SmartContractPage() {
   if (currentView === "statusTracker") {
     return <ContractStatusTracker 
       contractId={selectedContractId}
+      onGoBack={() => setCurrentView("dashboard")}
+    />;
+  }
+
+  if (currentView === "previousContracts") {
+    return <PreviousContractsPage 
       onGoBack={() => setCurrentView("dashboard")}
     />;
   }
@@ -315,10 +352,10 @@ export default function SmartContractPage() {
                 <h2 className="section-title">Quick Action Center</h2>
                 <ErrorBoundary>
                   <QuickActions 
-                    onNewContract={() => setCurrentView("newContract")} 
                     onImportContract={() => setCurrentView("importContract")}
                     onTemplateLibrary={() => setCurrentView("templateLibrary")}
                     onContractBuilder={() => handleContractBuilder()}
+                    onPreviousContracts={() => handlePreviousContracts()}
                   />
                 </ErrorBoundary>
               </section>

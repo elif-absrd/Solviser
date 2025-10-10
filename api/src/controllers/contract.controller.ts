@@ -60,7 +60,7 @@ export const createContract = async (req: Request, res: Response) => {
     const user = req.user!;
     const contractData = req.body;
     
-    const contract = await contractService.createContract(user.organizationId, user.id, contractData);
+    const contract = await contractService.createContract(user.organizationId, user.userId, contractData);
     res.status(201).json({ message: 'Contract created successfully!', contract });
   } catch (error: any) {
     logger.error(`Create Contract Error: ${error.message}`, {
@@ -77,7 +77,7 @@ export const saveDraftContract = async (req: Request, res: Response) => {
     const draftData = req.body;
     
     // Save draft data with draft status
-    const draftContract = await contractService.createContract(user.organizationId, user.id, {
+    const draftContract = await contractService.createContract(user.organizationId, user.userId, {
       ...draftData,
       status: 'draft'
     });

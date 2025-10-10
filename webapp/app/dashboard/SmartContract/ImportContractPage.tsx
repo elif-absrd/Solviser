@@ -11,17 +11,6 @@ interface ImportContractPageProps {
   onGoBack: () => void;
 }
 
-interface Item {
-  id: number;
-  itemName: string;
-  origin: string;
-  subCategory: string;
-  qty: string;
-  rate: string;
-  amount: number;
-  remarks: string;
-}
-
 interface ImportFormData {
   // Basic Contract Info
   contractId: string;
@@ -32,8 +21,9 @@ interface ImportFormData {
   supplierName: string;
   supplierEmail: string;
   supplierPhone: string;
+  supplierGstNumber: string;
   
-  // Items
+  // Items with enhanced fields
   items: Item[];
   totalAmount: number;
   amountInWords: string;
@@ -44,35 +34,35 @@ interface ImportFormData {
   paymentPeriod: string;
   paymentPeriodFrom: string;
   
-  // Dates
+  // Enhanced date fields from HTML
   invoiceDate: string;
   negotiationDate: string;
+  latestShipmentDate: string;
   acceptanceDate: string;
   blDate: string;
-  latestShipmentDate: string;
   lcExpiryDate: string;
   lcExpiryPlace: string;
   presentationDeadline: string;
   
-  // Documents
+  // Enhanced document checkboxes from HTML
   documents: {
-    invoice: boolean;
+    commercialInvoice: boolean;
     packingList: boolean;
-    bl: boolean;
-    coo: boolean;
-    insurance: boolean;
-    phytosanitary: boolean;
+    billOfLanding: boolean;
+    certificateOfOrigin: boolean;
+    insuranceCertificate: boolean;
+    phytosanitaryCertificate: boolean;
     other: boolean;
   };
   otherDocuments: string;
   
-  // Bank Details
-  advisingBank: string;
-  advisingCity: string;
-  advisingPin: string;
-  advisingCountry: string;
+  // Enhanced bank details from HTML
+  advisingBankName: string;
+  advisingBankCity: string;
+  advisingBankPin: string;
+  advisingBankCountry: string;
   
-  // Terms
+  // Terms & Conditions
   generalTerms: string;
   shippingTermsText: string;
   paymentTermsText: string;
@@ -80,10 +70,26 @@ interface ImportFormData {
   disputeTerms: string;
   otherTerms: string;
   
+  // Document upload settings
+  documentsUploaded: boolean;
+  skipDocuments: boolean;
+  uploadedFiles: File[];
+  
   // Acceptance
   termsAccepted: {
-    allTerms: boolean; // Changed to single checkbox
+    allTerms: boolean;
   };
+}
+
+interface Item {
+  id: number;
+  itemName: string;
+  origin: string;
+  length: string;
+  grade: string;
+  qty: string;
+  rate: string;
+  amount: number;
 }
 
 export default function ImportContractPage({ onGoBack }: ImportContractPageProps) {
@@ -103,16 +109,17 @@ export default function ImportContractPage({ onGoBack }: ImportContractPageProps
     supplierName: '',
     supplierEmail: '',
     supplierPhone: '',
+    supplierGstNumber: '',
     
     items: [{
       id: Date.now(),
       itemName: '',
       origin: '',
-      subCategory: '',
+      length: '',
+      grade: '',
       qty: '',
       rate: '',
-      amount: 0,
-      remarks: ''
+      amount: 0
     }],
     totalAmount: 0,
     amountInWords: '',
@@ -132,20 +139,24 @@ export default function ImportContractPage({ onGoBack }: ImportContractPageProps
     presentationDeadline: '21 Days from LSD',
     
     documents: {
-      invoice: false,
+      commercialInvoice: false,
       packingList: false,
-      bl: false,
-      coo: false,
-      insurance: false,
-      phytosanitary: false,
+      billOfLanding: false,
+      certificateOfOrigin: false,
+      insuranceCertificate: false,
+      phytosanitaryCertificate: false,
       other: false
     },
     otherDocuments: '',
     
-    advisingBank: '',
-    advisingCity: '',
-    advisingPin: '',
-    advisingCountry: '',
+    advisingBankName: '',
+    advisingBankCity: '',
+    advisingBankPin: '',
+    advisingBankCountry: '',
+    
+    documentsUploaded: false,
+    skipDocuments: false,
+    uploadedFiles: [],
     
     generalTerms: `This contract shall be valid between two parties.
 Any modifications shall be made in writing and with mutual consent.
@@ -248,11 +259,11 @@ Cancellations and termination clauses.`,
       id: Date.now(),
       itemName: '',
       origin: '',
-      subCategory: '',
+      length: '',
+      grade: '',
       qty: '',
       rate: '',
-      amount: 0,
-      remarks: ''
+      amount: 0
     };
     
     setFormData(prev => ({
@@ -450,11 +461,12 @@ Cancellations and termination clauses.`,
       doc.text("Item Details", margin, yPosition);
       yPosition += 10;
 
-      const itemHeaders = [['Item Name', 'Origin', 'Sub-Category', 'Qty', 'Rate (USD)', 'Amount (USD)']];
+      const itemHeaders = [['Item Name', 'Origin', 'Length', 'Grade', 'Qty (CBM)', 'Rate (USD)', 'Amount (USD)']];
       const itemBody = formData.items.map(item => [
         item.itemName || 'Not specified',
         item.origin || 'Not specified',
-        item.subCategory || 'Not specified',
+        item.length || 'Not specified',
+        item.grade || 'Not specified',
         item.qty || '0',
         parseFloat(item.rate || '0').toFixed(2),
         item.amount.toFixed(2)
@@ -525,7 +537,7 @@ Cancellations and termination clauses.`,
     yPosition = (doc as any).lastAutoTable.finalY + 15;
 
     // Bank Details
-    if (formData.advisingBank) {
+    if (formData.advisingBankName) {
       yPosition = checkPageBreak(yPosition, 40);
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
@@ -533,10 +545,10 @@ Cancellations and termination clauses.`,
       yPosition += 10;
 
       const bankData = [
-        ['Bank Name', formData.advisingBank || 'Not specified'],
-        ['City', formData.advisingCity || 'Not specified'],
-        ['PIN/Zip', formData.advisingPin || 'Not specified'],
-        ['Country', formData.advisingCountry || 'Not specified']
+        ['Bank Name', formData.advisingBankName || 'Not specified'],
+        ['City', formData.advisingBankCity || 'Not specified'],
+        ['PIN/Zip', formData.advisingBankPin || 'Not specified'],
+        ['Country', formData.advisingBankCountry || 'Not specified']
       ];
 
       autoTable(doc, {
@@ -678,7 +690,7 @@ Cancellations and termination clauses.`,
         contractTitle: `Import Contract - ${formData.contractId}`,
         contractType: 'import',
         buyerName: formData.supplierName,
-        buyerRegisteredAddress: formData.firmName,
+        registeredAddress: formData.firmName,
         buyerContactPerson: formData.supplierName,
         buyerEmail: formData.supplierEmail,
         buyerPhone: formData.supplierPhone,
@@ -690,7 +702,20 @@ Cancellations and termination clauses.`,
         industry: 'Import/Export',
         priority: 'medium',
         documentPath: null, // Will be updated when PDF is uploaded
-        notes: `Import Contract - Generated from template on ${new Date().toLocaleDateString()}`
+        notes: `Import Contract - Generated from template on ${new Date().toLocaleDateString()}`,
+        
+        // Import-specific fields
+        isImportContract: true,
+        documentsSkipped: formData.skipDocuments,
+        presentationDeadline: formData.skipDocuments ? formData.presentationDeadline : null,
+        
+        // Document flags
+        hasCommercialInvoice: formData.documents.commercialInvoice,
+        hasPackingList: formData.documents.packingList,
+        hasBillOfLanding: formData.documents.billOfLanding,
+        hasCertificateOfOrigin: formData.documents.certificateOfOrigin,
+        hasInsuranceCertificate: formData.documents.insuranceCertificate,
+        hasPhytosanitaryCertificate: formData.documents.phytosanitaryCertificate
       });
       
       console.log('Import contract created:', response.data);
@@ -699,6 +724,208 @@ Cancellations and termination clauses.`,
     } catch (error: any) {
       console.error('Failed to create import contract:', error);
       alert('Failed to create import contract: ' + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const handlePreview = async () => {
+    try {
+      // Create a preview of the contract data
+      const previewData = {
+        contractTitle: `Import Contract - ${formData.contractId}`,
+        contractType: 'import',
+        buyerName: formData.supplierName,
+        registeredAddress: formData.firmName,
+        buyerContactPerson: formData.supplierName,
+        buyerEmail: formData.supplierEmail,
+        buyerPhone: formData.supplierPhone,
+        contractValue: formData.totalAmount,
+        currency: 'USD',
+        termsAndClauses: `${formData.generalTerms}\n\nShipping Terms:\n${formData.shippingTermsText}\n\nPayment Terms:\n${formData.paymentTermsText}\n\nDelivery Terms:\n${formData.deliveryTerms}\n\nDispute Terms:\n${formData.disputeTerms}\n\nOther Terms:\n${formData.otherTerms}`,
+        industry: 'Import/Export',
+        documentsSkipped: formData.skipDocuments,
+        presentationDeadline: formData.skipDocuments ? formData.presentationDeadline : null
+      };
+      
+      // Open preview in a new window
+      const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+      if (previewWindow) {
+        previewWindow.document.write(`
+          <html>
+            <head>
+              <title>Contract Preview - ${formData.contractId}</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+                .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+                .label { font-weight: bold; color: #333; }
+                .value { margin-left: 10px; }
+                .terms { background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 10px; }
+                .document-status { color: ${formData.skipDocuments ? '#d32f2f' : '#2e7d32'}; }
+                .print-btn { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+                .close-btn { padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>Import Contract Preview</h1>
+                <p><strong>Contract ID:</strong> ${formData.contractId}</p>
+                <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+              </div>
+              
+              <div class="section">
+                <h2>Parties Information</h2>
+                <p><span class="label">Supplier/Buyer:</span><span class="value">${formData.supplierName}</span></p>
+                <p><span class="label">Firm Name:</span><span class="value">${formData.firmName}</span></p>
+                <p><span class="label">Email:</span><span class="value">${formData.supplierEmail}</span></p>
+                <p><span class="label">Phone:</span><span class="value">${formData.supplierPhone}</span></p>
+              </div>
+              
+              <div class="section">
+                <h2>Contract Details</h2>
+                <p><span class="label">Contract Value:</span><span class="value">$${formData.totalAmount}</span></p>
+                <p><span class="label">Currency:</span><span class="value">USD</span></p>
+                <p><span class="label">Industry:</span><span class="value">Import/Export</span></p>
+              </div>
+              
+              <div class="section">
+                <h2>Document Status</h2>
+                <p class="document-status">
+                  <span class="label">Status:</span>
+                  <span class="value">
+                    ${formData.skipDocuments ? 
+                      `Documents skipped - Must be uploaded by ${formData.presentationDeadline}` : 
+                      'Documents will be uploaded with this contract'
+                    }
+                  </span>
+                </p>
+                ${formData.skipDocuments ? '' : `
+                  <div style="margin-top: 10px;">
+                    <p><span class="label">Required Documents:</span></p>
+                    <ul>
+                      ${formData.documents.commercialInvoice ? '<li>Commercial Invoice</li>' : ''}
+                      ${formData.documents.packingList ? '<li>Packing List</li>' : ''}
+                      ${formData.documents.billOfLanding ? '<li>Bill of Landing</li>' : ''}
+                      ${formData.documents.certificateOfOrigin ? '<li>Certificate of Origin</li>' : ''}
+                      ${formData.documents.insuranceCertificate ? '<li>Insurance Certificate</li>' : ''}
+                      ${formData.documents.phytosanitaryCertificate ? '<li>Phytosanitary Certificate</li>' : ''}
+                    </ul>
+                  </div>
+                `}
+              </div>
+              
+              <div class="section">
+                <h2>Terms and Conditions</h2>
+                <div class="terms">
+                  <h3>General Terms</h3>
+                  <p>${formData.generalTerms || 'No general terms specified'}</p>
+                  
+                  <h3>Shipping Terms</h3>
+                  <p>${formData.shippingTermsText || 'No shipping terms specified'}</p>
+                  
+                  <h3>Payment Terms</h3>
+                  <p>${formData.paymentTermsText || 'No payment terms specified'}</p>
+                  
+                  <h3>Delivery Terms</h3>
+                  <p>${formData.deliveryTerms || 'No delivery terms specified'}</p>
+                  
+                  <h3>Dispute Resolution</h3>
+                  <p>${formData.disputeTerms || 'No dispute terms specified'}</p>
+                  
+                  <h3>Other Terms</h3>
+                  <p>${formData.otherTerms || 'No other terms specified'}</p>
+                </div>
+              </div>
+              
+              <div style="margin-top: 40px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px;">
+                <button onclick="window.print()" class="print-btn">Print Contract</button>
+                <button onclick="window.close()" class="close-btn">Close Preview</button>
+              </div>
+            </body>
+          </html>
+        `);
+        previewWindow.document.close();
+      }
+    } catch (error: any) {
+      console.error('Error generating preview:', error);
+      alert('Failed to generate contract preview. Please try again.');
+    }
+  };
+
+  const handleSendToBuyer = async () => {
+    // Validate that all required terms are accepted
+    const allTermsAccepted = Object.values(formData.termsAccepted).every(accepted => accepted);
+    
+    if (!allTermsAccepted) {
+      alert('Please accept all terms and conditions before sending to buyer.');
+      return;
+    }
+
+    if (!formData.supplierEmail) {
+      alert('Buyer email is required to send the contract.');
+      return;
+    }
+
+    try {
+      // First create the contract
+      const contractResponse = await api.post('/contracts', {
+        contractTitle: `Import Contract - ${formData.contractId}`,
+        contractType: 'import',
+        buyerName: formData.supplierName,
+        registeredAddress: formData.firmName,
+        buyerContactPerson: formData.supplierName,
+        buyerEmail: formData.supplierEmail,
+        buyerPhone: formData.supplierPhone,
+        contractValue: formData.totalAmount,
+        currency: 'USD',
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+        termsAndClauses: `${formData.generalTerms}\n\nShipping Terms:\n${formData.shippingTermsText}\n\nPayment Terms:\n${formData.paymentTermsText}\n\nDelivery Terms:\n${formData.deliveryTerms}\n\nDispute Terms:\n${formData.disputeTerms}\n\nOther Terms:\n${formData.otherTerms}`,
+        industry: 'Import/Export',
+        priority: 'medium',
+        documentPath: null,
+        notes: `Import Contract - Generated and sent to buyer on ${new Date().toLocaleDateString()}`,
+        status: 'ACTIVE', // Set as active when sending to buyer
+        
+        // Import-specific fields
+        isImportContract: true,
+        documentsSkipped: formData.skipDocuments,
+        presentationDeadline: formData.skipDocuments ? formData.presentationDeadline : null,
+        hasCommercialInvoice: formData.documents.commercialInvoice,
+        hasPackingList: formData.documents.packingList,
+        hasBillOfLanding: formData.documents.billOfLanding,
+        hasCertificateOfOrigin: formData.documents.certificateOfOrigin,
+        hasInsuranceCertificate: formData.documents.insuranceCertificate,
+        hasPhytosanitaryCertificate: formData.documents.phytosanitaryCertificate
+      });
+      
+      if (contractResponse.data.success) {
+        const contractId = contractResponse.data.contract.id;
+        
+        // Send notification to buyer
+        try {
+          const notifyResponse = await api.post('/contracts/notify-buyer', {
+            contractId: contractId,
+            gstNumber: formData.supplierGstNumber || 'N/A', // Use GST if available
+            message: `A new import contract (${formData.contractId}) has been created and is ready for your review. Please check your email and log in to the portal to view the contract details and proceed with the necessary actions.`,
+            notificationType: 'contract_created'
+          });
+          
+          if (notifyResponse.data.success) {
+            alert('Contract created and sent to buyer successfully! The buyer will receive a notification email.');
+          } else {
+            alert('Contract created but failed to send notification to buyer. You can notify them manually.');
+          }
+        } catch (notifyError) {
+          console.error('Failed to notify buyer:', notifyError);
+          alert('Contract created successfully, but failed to send notification to buyer. You can notify them manually.');
+        }
+        
+        // Redirect to previous contracts page
+        onGoBack();
+      }
+    } catch (error: any) {
+      console.error('Failed to send contract to buyer:', error);
+      alert('Failed to send contract to buyer: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -815,6 +1042,17 @@ Cancellations and termination clauses.`,
                     title="Enter the supplier's phone number"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">GST Number (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={formData.supplierGstNumber}
+                    onChange={(e) => handleInputChange('supplierGstNumber', e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title="Enter the supplier's GST number if available"
+                    placeholder="Enter GST number (optional)"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -874,18 +1112,25 @@ Cancellations and termination clauses.`,
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Sub-Category *</label>
-                      <select
-                        value={item.subCategory}
-                        onChange={(e) => updateItem(item.id, 'subCategory', e.target.value)}
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Length *</label>
+                      <input
+                        type="text"
+                        value={item.length}
+                        onChange={(e) => updateItem(item.id, 'length', e.target.value)}
                         className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500"
-                        title="Select item sub-category"
-                      >
-                        <option value="">Select Category</option>
-                        {dropdowns.sub_categories?.map(option => (
-                          <option key={option.id} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
+                        placeholder="Enter length"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Grade *</label>
+                      <input
+                        type="text"
+                        value={item.grade}
+                        onChange={(e) => updateItem(item.id, 'grade', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500"
+                        placeholder="Enter grade"
+                      />
                     </div>
 
                     <div>
@@ -1125,8 +1370,8 @@ Cancellations and termination clauses.`,
                 <label className="flex items-center">
                   <input 
                     type="checkbox" 
-                    checked={formData.documents.invoice}
-                    onChange={(e) => handleDocumentChange('invoice', e.target.checked)}
+                    checked={formData.documents.commercialInvoice}
+                    onChange={(e) => handleDocumentChange('commercialInvoice', e.target.checked)}
                     className="mr-2 text-red-600 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">Commercial Invoice</span>
@@ -1143,8 +1388,8 @@ Cancellations and termination clauses.`,
                 <label className="flex items-center">
                   <input 
                     type="checkbox" 
-                    checked={formData.documents.bl}
-                    onChange={(e) => handleDocumentChange('bl', e.target.checked)}
+                    checked={formData.documents.billOfLanding}
+                    onChange={(e) => handleDocumentChange('billOfLanding', e.target.checked)}
                     className="mr-2 text-red-600 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">Bill of Lading</span>
@@ -1152,8 +1397,8 @@ Cancellations and termination clauses.`,
                 <label className="flex items-center">
                   <input 
                     type="checkbox" 
-                    checked={formData.documents.coo}
-                    onChange={(e) => handleDocumentChange('coo', e.target.checked)}
+                    checked={formData.documents.certificateOfOrigin}
+                    onChange={(e) => handleDocumentChange('certificateOfOrigin', e.target.checked)}
                     className="mr-2 text-red-600 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">Certificate of Origin</span>
@@ -1161,8 +1406,8 @@ Cancellations and termination clauses.`,
                 <label className="flex items-center">
                   <input 
                     type="checkbox" 
-                    checked={formData.documents.insurance}
-                    onChange={(e) => handleDocumentChange('insurance', e.target.checked)}
+                    checked={formData.documents.insuranceCertificate}
+                    onChange={(e) => handleDocumentChange('insuranceCertificate', e.target.checked)}
                     className="mr-2 text-red-600 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">Insurance Certificate</span>
@@ -1170,8 +1415,8 @@ Cancellations and termination clauses.`,
                 <label className="flex items-center">
                   <input 
                     type="checkbox" 
-                    checked={formData.documents.phytosanitary}
-                    onChange={(e) => handleDocumentChange('phytosanitary', e.target.checked)}
+                    checked={formData.documents.phytosanitaryCertificate}
+                    onChange={(e) => handleDocumentChange('phytosanitaryCertificate', e.target.checked)}
                     className="mr-2 text-red-600 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">Phytosanitary Certificate</span>
@@ -1206,8 +1451,8 @@ Cancellations and termination clauses.`,
                   <label className="block text-sm font-medium text-gray-700 mb-2">Advising Bank Name</label>
                   <input 
                     type="text" 
-                    value={formData.advisingBank}
-                    onChange={(e) => handleInputChange('advisingBank', e.target.value)}
+                    value={formData.advisingBankName}
+                    onChange={(e) => handleInputChange('advisingBankName', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     title="Enter the name of the advising bank"
                   />
@@ -1217,8 +1462,8 @@ Cancellations and termination clauses.`,
                   <label className="block text-sm font-medium text-gray-700 mb-2">Advising Bank City</label>
                   <input 
                     type="text" 
-                    value={formData.advisingCity}
-                    onChange={(e) => handleInputChange('advisingCity', e.target.value)}
+                    value={formData.advisingBankCity}
+                    onChange={(e) => handleInputChange('advisingBankCity', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     title='Enter the city where the advising bank is located'
                   />
@@ -1228,8 +1473,8 @@ Cancellations and termination clauses.`,
                   <label className="block text-sm font-medium text-gray-700 mb-2">Advising Bank PIN / Zip</label>
                   <input 
                     type="text" 
-                    value={formData.advisingPin}
-                    onChange={(e) => handleInputChange('advisingPin', e.target.value)}
+                    value={formData.advisingBankPin}
+                    onChange={(e) => handleInputChange('advisingBankPin', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     title='Enter the PIN or Zip code of the advising bank'
                   />
@@ -1238,8 +1483,8 @@ Cancellations and termination clauses.`,
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Advising Bank Country</label>
                   <select 
-                    value={formData.advisingCountry}
-                    onChange={(e) => handleInputChange('advisingCountry', e.target.value)}
+                    value={formData.advisingBankCountry}
+                    onChange={(e) => handleInputChange('advisingBankCountry', e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     title="Select advising bank country"
                   >
@@ -1369,6 +1614,167 @@ Cancellations and termination clauses.`,
           </div>
         );
         
+      case 5:
+        return (
+          <div>
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">Document Upload</h2>
+              <p className="text-gray-500">Upload contract documents or skip this step to finalize later.</p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Skip Documents Option */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="skipDocuments"
+                    checked={formData.skipDocuments}
+                    onChange={(e) => handleInputChange('skipDocuments', e.target.checked)}
+                    className="mt-1 h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="skipDocuments" className="text-sm font-medium text-yellow-800">
+                      Skip document upload for now
+                    </label>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      You can upload documents later. The system will remind you daily until the presentation deadline.
+                    </p>
+                  </div>
+                </div>
+                
+                {formData.skipDocuments && (
+                  <div className="mt-4 pt-4 border-t border-yellow-200">
+                    <label className="block text-sm font-medium text-yellow-800 mb-2">
+                      Presentation Deadline *
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.presentationDeadline}
+                      onChange={(e) => handleInputChange('presentationDeadline', e.target.value)}
+                      className="w-full max-w-xs p-2 border border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      required={formData.skipDocuments}
+                      title="Select when documents must be presented"
+                    />
+                    <p className="text-xs text-yellow-600 mt-1">
+                      Daily reminders will be sent until this date
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Document Upload Section */}
+              {!formData.skipDocuments && (
+                <div className="border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Upload Documents</h3>
+                  
+                  {/* File Upload Area */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-red-400 transition-colors">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-lg text-gray-600">
+                          Drop files here or <span className="text-red-500 underline cursor-pointer">browse</span>
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          PDF, DOC, DOCX files up to 10MB each
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files || []);
+                          setFormData(prev => ({
+                            ...prev,
+                            uploadedFiles: [...prev.uploadedFiles, ...files]
+                          }));
+                        }}
+                        className="hidden"
+                        id="fileUpload"
+                      />
+                      <label
+                        htmlFor="fileUpload"
+                        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer transition-colors"
+                      >
+                        Choose Files
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Uploaded Files List */}
+                  {formData.uploadedFiles.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-md font-medium text-gray-800 mb-3">Uploaded Files</h4>
+                      <div className="space-y-2">
+                        {formData.uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
+                                <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                                <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  uploadedFiles: prev.uploadedFiles.filter((_, i) => i !== index)
+                                }));
+                              }}
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                              title="Remove file"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Document Requirements Reminder */}
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="text-sm font-medium text-blue-800 mb-2">Required Documents (Selected)</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-blue-700">
+                      {Object.entries(formData.documents)
+                        .filter(([key, value]) => value && key !== 'other')
+                        .map(([key, _]) => (
+                          <div key={key} className="flex items-center space-x-1">
+                            <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            <span>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                          </div>
+                        ))}
+                      {formData.documents.other && formData.otherDocuments && (
+                        <div className="flex items-center space-x-1">
+                          <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span>{formData.otherDocuments}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -1402,6 +1808,7 @@ Cancellations and termination clauses.`,
             <span>Save Draft</span>
           </button>
           <button
+            onClick={handlePreview}
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2"
             title="Preview contract before finalizing"
           >
@@ -1409,6 +1816,7 @@ Cancellations and termination clauses.`,
             <span>Preview</span>
           </button>
           <button
+            onClick={handleSendToBuyer}
             className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
             title="Send contract to buyer"
           >
@@ -1422,7 +1830,7 @@ Cancellations and termination clauses.`,
       <div className="mb-8">
         <Stepper 
           currentStep={currentStep} 
-          totalSteps={5}
+          totalSteps={6}
         />
       </div>
 
@@ -1441,7 +1849,7 @@ Cancellations and termination clauses.`,
           Previous
         </button>
         
-        {currentStep < 4 ? (
+        {currentStep < 5 ? (
           <button
             onClick={handleNext}
             className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"

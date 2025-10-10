@@ -42,6 +42,19 @@ export interface ContractCreateInput {
   // Document Management
   documentPath?: string;
   notes?: string;
+  
+  // Import Contract Specific Fields
+  isImportContract?: boolean;
+  documentsSkipped?: boolean;
+  presentationDeadline?: string | Date;
+  
+  // Document flags
+  hasCommercialInvoice?: boolean;
+  hasPackingList?: boolean;
+  hasBillOfLanding?: boolean;
+  hasCertificateOfOrigin?: boolean;
+  hasInsuranceCertificate?: boolean;
+  hasPhytosanitaryCertificate?: boolean;
 }
 
 export interface ContractUpdateInput extends Partial<ContractCreateInput> {
